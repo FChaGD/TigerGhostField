@@ -6,8 +6,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Character/CharacterInterface.h"
-#include "BaseCharacter.generated.h"
+#include "Character/ICharacterInterface.h"
+#include "ABaseCharacter.generated.h"
 
 //Implements core character functionality including health, stamina, and death handling.
 //Inherits from ACharacter for Unreal Engine character behavior and ICharacterInterface
@@ -17,10 +17,10 @@ class ABaseCharacter : public ACharacter, public ICharacterInterface
 {
 	GENERATED_BODY()
 
-	float hp = 100.f;
-	float maxHp = 100.f;
-	float stamina = 100.f;
-	float maxStamina = 100.f;
+	float Hp = 100.f;
+	float MaxHp = 100.f;
+	float Stamina = 100.f;
+	float MaxStamina = 100.f;
 
 	bool bIsDead = false;
 
@@ -46,5 +46,5 @@ public:
 	/**
 	 * Handles the character's death, setting the dead flag and performing any additional logic.
 	 */
-	virtual void death();
+	virtual void Death();
 };

@@ -5,8 +5,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Character/CombatStructs.h"
-#include "CharacterInterface.generated.h"
+#include "Character/FCombatStructs.h"
+#include "ICharacterInterface.generated.h"
 
 // This class is designed for polymorphism and provides a unified interface for character-related interactions.
 UINTERFACE(MinimalAPI)

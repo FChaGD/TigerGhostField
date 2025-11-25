@@ -1,4 +1,4 @@
-#include "Character/BaseCharacter.h"
+#include "Character/ABaseCharacter.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -14,14 +14,16 @@ void ABaseCharacter::BeginPlay()
 
 void ABaseCharacter::CalculateDamage(const FAttackParams& attackParam)
 {
-    hp -= attackParam.PhysicalDamage;
-    if (hp <= 0.f && !bIsDead)
+    //NOTE : Temporarily written content
+    //TODO : Modification after plan confirmation
+    Hp -= attackParam.PhysicalDamage;
+    if (Hp <= 0.f && !bIsDead)
     {
-        death();
+        Death();
     }
 }
 
-void ABaseCharacter::death()
+void ABaseCharacter::Death()
 {
 	bIsDead = true;
 }

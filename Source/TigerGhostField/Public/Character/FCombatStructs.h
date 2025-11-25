@@ -7,7 +7,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CombatStructs.generated.h"
+#include "FCombatStructs.generated.h"
 
 /**
  * Enum representing the interaction type between an attack and the target's defensive state.
