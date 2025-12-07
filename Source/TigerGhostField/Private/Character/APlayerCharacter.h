@@ -4,7 +4,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/WidgetComponent.h"
 #include "Character/FCombatStructs.h"
+#include "Delegates/DelegateCombinations.h"
 #include "Character/ABaseCharacter.h"
 #include "APlayerCharacter.generated.h"
 
@@ -15,6 +17,12 @@ UCLASS()
 class TIGERGHOSTFIELD_API APlayerCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
+
+public:
+
+	// Constructor that sets default values for the player character's properties.
+	APlayerCharacter();
+
 private:
 	
 	// Indicates the character's baseline defensive state when no specific input is provided.
@@ -30,7 +38,13 @@ private:
 	// this value is held in a queue-like manner and applied once the current defensive action
 	// becomes replaceable. Used to prevent input loss and enable smooth defensive transitions.
 	ECombatInteractionType InputDeffenceType;
-	
+
+	static constexpr int32 HeadWidgetCount = static_cast<int32>(ECombatInteractionType::MAX);
+
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	TArray<TObjectPtr<UWidgetComponent>> HeadWidgets;
+
+	static FString GetCombatInteractionName(ECombatInteractionType Type);
 
 	TQueue<ECombatInteractionType> NotificationEventPop;
 	void ProcessNextNotification();
@@ -41,5 +55,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void AttackNotificationEvent(ECombatInteractionType inputNotificationEvent);
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void CalculateDamage(const FAttackParams& attackParam) override;
 };

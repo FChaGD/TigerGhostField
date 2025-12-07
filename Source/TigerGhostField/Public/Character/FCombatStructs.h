@@ -19,7 +19,8 @@ enum class ECombatInteractionType : uint8
     Guard       UMETA(DisplayName = "Guard"),   // Blocked if target is guarding
     Parry       UMETA(DisplayName = "Parry"),   // Can be parried if target timing is correct
     Counter     UMETA(DisplayName = "Counter"), // Triggers a counterattack if conditions are met
-    Dodge       UMETA(DisplayName = "Dodge")    // Can be dodged by a moving target
+    Dodge       UMETA(DisplayName = "Dodge"),    // Can be dodged by a moving target
+    MAX UMETA(Hidden)
 };
 
 /**
