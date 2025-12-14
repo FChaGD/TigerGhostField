@@ -10,6 +10,10 @@
 #include "Character/ABaseCharacter.h"
 #include "APlayerCharacter.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
+class UDA_InputDataAsset;
+struct FInputActionValue;
 /**
  * 
  */
@@ -51,10 +55,31 @@ private:
 	void AttackNotification();
 
 	void Attack();
+
+	// Camera Components Start
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	USpringArmComponent* CameraBoom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* FollowCamera;
+	// Camera Components End
+
+#pragma region Inputs
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
+	UDA_InputDataAsset* InputDataAsset;
+
+	void Input_Move(const FInputActionValue& InputActionValue);
+	void Input_Look(const FInputActionValue& InputActionValue);
+
+#pragma endregion
+
 public:	
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void AttackNotificationEvent(ECombatInteractionType inputNotificationEvent);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void CalculateDamage(const FAttackParams& attackParam) override;
+
+protected:
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 };
