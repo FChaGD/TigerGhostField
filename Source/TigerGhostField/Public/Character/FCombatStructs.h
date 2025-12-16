@@ -36,8 +36,9 @@ struct FAttackParams
 public:
     /** Base raw physical damage value before any modifiers, resistances, or defensive interactions are applied. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float PhysicalDamage = 0.f;
-
+    //ToDo : Default 0 if End ProtoType
+    float PhysicalDamage = 10.f;
+    float SpiritualDamage = 10.f;
     /** Defines the attack's interaction type relative to the target's defensive state (Guard, Parry, Counter, Dodge). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     ECombatInteractionType AttackType = ECombatInteractionType::Dodge;

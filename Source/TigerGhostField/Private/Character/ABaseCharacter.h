@@ -9,6 +9,14 @@
 #include "Character/ICharacterInterface.h"
 #include "ABaseCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class EMentalityState : uint8
+{
+	Normal UMETA(DisplayName = "Normal"),   // Default state
+	Weak   UMETA(DisplayName = "Weak"),     // Mentality reached 0
+	Fragile UMETA(DisplayName = "Fragile")  // After repeating same action 3 times in Weak state
+};
+
 //Implements core character functionality including health, stamina, and death handling.
 //Inherits from ACharacter for Unreal Engine character behavior and ICharacterInterface
 //for standardized combat interactions.
@@ -16,13 +24,52 @@ UCLASS()
 class ABaseCharacter : public ACharacter, public ICharacterInterface
 {
 	GENERATED_BODY()
+private:
+	//--------------------------------
+	int HpStatPoint = 0;
+	int StaminaStatPoint = 0;
+	int MentalityStatPoint = 0;
+	int SpiritualPowerStatPoint = 0;
+	int AttackPowerStatPoint = 0;
 
+	//--------------------------------
 	float Hp = 100.f;
 	float MaxHp = 100.f;
+
+	float PhysicalDef = 0.f;
+	void SetPhysicalDef();
+	//--------------------------------
 	float Stamina = 100.f;
 	float MaxStamina = 100.f;
 
+	float PhysicalAttackCoefficient = 100.f;
+	void SetPhysicalAttackCoefficient();
+	//--------------------------------
+	float Mentality = 100.f;
+	float MaxMentality = 100.f;
+
+	int32 ConsecutiveSameActionCount = 0;
+	EMentalityState MentalityState = EMentalityState::Normal;
+	void SetMentalityState();
+	float RecoveryCoefficient = 100.f;
+	void SetRecoveryCoefficient();
+	float DamageReceivedCoefficient = 100.f;
+	void SetDamageReceivedCoefficient();
+	//--------------------------------
+	float SpiritualPower = 100.f;
+	float MaxSpiritualPower = 100.f;
+
+	float SpiritualDef = 0.f;
+	void SetSpirituallDef();
+	float SpiritualAttackCoefficient = 100.f;
+	void SetSpirituallSpiritualAttackCoefficient();
+	//--------------------------------
+	float AttackPower = 100.f;
+
+	//--------------------------------
 	bool bIsDead = false;
+	virtual void Death();
+
 
 public:
 	/** Constructor that sets default values for the character's properties. */
@@ -32,6 +79,9 @@ protected:
 	/** Called when the game starts or when spawned. */
 	virtual void BeginPlay() override;
 
+private:
+
+	//ToDo : 30FrameTrigger
 public:
 	/**
 	 * Calculates the effective damage of an incoming attack based on the character's
@@ -46,5 +96,5 @@ public:
 	/**
 	 * Handles the character's death, setting the dead flag and performing any additional logic.
 	 */
-	virtual void Death();
+
 };

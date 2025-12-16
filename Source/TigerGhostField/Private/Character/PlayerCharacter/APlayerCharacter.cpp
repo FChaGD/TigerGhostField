@@ -1,14 +1,15 @@
 #include "APlayerCharacter.h"
 
+void APlayerCharacter::CalculateDamage(const FAttackParams& attackParam)
+{
+    Super::CalculateDamage(attackParam);
+}
+
 void APlayerCharacter::AttackNotificationEvent(ECombatInteractionType inputNotificationEvent)
 {
     NotificationEventPop.Enqueue(inputNotificationEvent);
 
     AttackNotification();
-}
-
-void APlayerCharacter::CalculateDamage(const FAttackParams& attackParam)
-{
 }
 
 void APlayerCharacter::AttackNotification()

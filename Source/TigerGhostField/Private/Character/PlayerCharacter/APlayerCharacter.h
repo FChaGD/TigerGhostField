@@ -51,10 +51,11 @@ private:
 	void AttackNotification();
 
 	void Attack();
-public:	
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void AttackNotificationEvent(ECombatInteractionType inputNotificationEvent);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void CalculateDamage(const FAttackParams& attackParam) override;
+
+public:	
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void AttackNotificationEvent(ECombatInteractionType inputNotificationEvent);
 };

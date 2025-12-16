@@ -3,7 +3,7 @@
 
 #include "GameMode/ProtoTypeGameMode.h"
 #include "GameFramework/PlayerController.h"
-#include "Character/APlayerCharacter.h"
+#include "Character/PlayerCharacter/APlayerCharacter.h"
 
 AProtoTypeGameMode::AProtoTypeGameMode()
 {
