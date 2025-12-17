@@ -23,8 +23,14 @@ public:
 	UInputAction* MoveInputAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UInputAction* RunInputAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* LookInputAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UInputAction* AttackInputAction;
+	UInputAction* LightAttackInputAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UInputAction* HeavyAttackInputAction;
 };

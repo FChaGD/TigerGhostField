@@ -71,6 +71,12 @@ private:
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
 
+	void Input_RunTrigger(const FInputActionValue& InputActionValue);
+	void Input_RunComplete(const FInputActionValue& InputActionValue);
+
+	void Input_LightAttack(const FInputActionValue& InputActionValue);
+	void Input_HeavyAttack(const FInputActionValue& InputActionValue);
+
 #pragma endregion
 
 public:	

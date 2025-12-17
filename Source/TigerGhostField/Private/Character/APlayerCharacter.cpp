@@ -40,6 +40,27 @@ void APlayerCharacter::Input_Look(const FInputActionValue& InputActionValue)
     }
 }
 
+void APlayerCharacter::Input_RunTrigger(const FInputActionValue& InputActionValue)
+{
+    GetCharacterMovement()->MaxWalkSpeed = 600.f;	// 최대 걷기 속도
+}
+
+void APlayerCharacter::Input_RunComplete(const FInputActionValue& InputActionValue)
+{
+    GetCharacterMovement()->MaxWalkSpeed = 400.f;	// 최대 걷기 속도
+}
+
+void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionValue)
+{
+    UE_LOG(LogTemp, Warning, TEXT("LightAttack"));
+}
+
+void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
+{
+    UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
+}
+
+
 void APlayerCharacter::AttackNotificationEvent(ECombatInteractionType inputNotificationEvent)
 {
     NotificationEventPop.Enqueue(inputNotificationEvent);
@@ -71,6 +92,36 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         ETriggerEvent::Triggered,
         this,
         &ThisClass::Input_Look);
+
+    // Run Input Bind
+    PlayerInput->BindInputAction(
+        InputDataAsset->RunInputAction,
+        ETriggerEvent::Triggered,
+        this,
+        &ThisClass::Input_RunTrigger);
+    PlayerInput->BindInputAction(
+        InputDataAsset->RunInputAction,
+        ETriggerEvent::Completed,
+        this,
+        &ThisClass::Input_RunComplete);
+    PlayerInput->BindInputAction(
+        InputDataAsset->RunInputAction,
+        ETriggerEvent::Canceled,
+        this,
+        &ThisClass::Input_RunComplete);
+
+    PlayerInput->BindInputAction(
+        InputDataAsset->LightAttackInputAction,
+        ETriggerEvent::Started,
+        this,
+        &ThisClass::Input_LightAttack);
+    PlayerInput->BindInputAction(
+        InputDataAsset->HeavyAttackInputAction,
+        ETriggerEvent::Started,
+        this,
+        &ThisClass::Input_HeavyAttack);
+
+    UE_LOG(LogTemp, Warning, TEXT("Binding Attack"));
 }
 
 void APlayerCharacter::AttackNotification()
