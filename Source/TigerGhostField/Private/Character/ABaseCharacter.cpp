@@ -43,6 +43,67 @@ void ABaseCharacter::SetPhysicalAttackCoefficient()
     PhysicalAttackCoefficient = FMath::Clamp(0.75f * StaminaPercent + 65.f, 80.f, 140.f);
 }
 
+void ABaseCharacter::AddStatTrigger(ITriggerObserver* Trigger)
+{
+    if (Trigger && !StatTriggers.Contains(Trigger))
+    {
+        StatTriggers.Add(Trigger);
+    }
+}
+
+void ABaseCharacter::ConsumeStat(uint8 Type, float Amount)
+{
+    switch (Type)
+    {
+    case 0: Hp = FMath::Clamp(Hp - Amount, 0.f, MaxHp); break;
+    case 1: Stamina = FMath::Clamp(Stamina - Amount, 0.f, MaxStamina); break;
+    case 2: Mentality = FMath::Clamp(Mentality - Amount, 0.f, MaxMentality); break;
+    case 3: SpiritualPower = FMath::Clamp(SpiritualPower - Amount, 0.f, MaxSpiritualPower); break;
+    }
+
+    if (MentalityState == EMentalityState::Weak)
+    {
+        if (LastConsumedType == Type)
+        {
+            ConsecutiveSameConsumption++;
+        }
+        else
+        {
+            LastConsumedType = Type;
+            ConsecutiveSameConsumption = 1;
+        }
+        UE_LOG(LogTemp, Warning, TEXT("Weak: Type=%d, Consecutive=%d"), Type, ConsecutiveSameConsumption);
+    }
+
+    FName StatName;
+    switch (Type)
+    {
+    case 0: StatName = FName("Hp"); break;
+    case 1: StatName = FName("Stamina"); break;
+    case 2: StatName = FName("Mentality"); break;
+    case 3: StatName = FName("SpiritualPower"); break;
+    }
+    NotifyStatChanged(StatName);
+
+    SetPhysicalDef();
+    SetSpirituallDef();
+    SetSpirituallSpiritualAttackCoefficient();
+    SetMentalityState();
+    SetRecoveryCoefficient();
+    SetDamageReceivedCoefficient();
+}
+
+void ABaseCharacter::NotifyStatChanged(FName StatName)
+{
+    for (ITriggerObserver* Trigger : StatTriggers)
+    {
+        if (Trigger)
+        {
+            Trigger->OnStatChanged(StatName, this);
+        }
+    }
+}
+
 void ABaseCharacter::SetMentalityState()
 {
     if (Mentality <= 0.f)

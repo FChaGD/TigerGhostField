@@ -1,14 +1,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/NoExportTypes.h"
 #include "HPTrigger.generated.h"
+#include "ITriggerObserver.h"
 
 UCLASS(BlueprintType)
-class TIGERGHOSTFIELD_API UHPTrigger : public UObject
+class TIGERGHOSTFIELD_API UHPTrigger : public UObject, public ITriggerObserver
 {
     GENERATED_BODY()
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trigger")
-    int32 Guard;
+    virtual void OnStatChanged(FName StatName, class ABaseCharacter* Owner) override;
+
 };

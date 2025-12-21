@@ -48,8 +48,16 @@ private:
 	float Mentality = 100.f;
 	float MaxMentality = 100.f;
 
+	uint8 LastConsumedType = 255;
 	int32 ConsecutiveSameActionCount = 0;
 	EMentalityState MentalityState = EMentalityState::Normal;
+
+public:
+	void AddStatTrigger(ITriggerObserver* Trigger);
+	void ConsumeStat(uint8 Type, float Amount);
+private:
+	void NotifyStatChanged(FName StatName);
+
 	void SetMentalityState();
 	float RecoveryCoefficient = 100.f;
 	void SetRecoveryCoefficient();
@@ -70,6 +78,8 @@ private:
 	bool bIsDead = false;
 	virtual void Death();
 
+	UPROPERTY()
+	TArray<class ITriggerObserver*> StatTriggers;
 
 public:
 	/** Constructor that sets default values for the character's properties. */

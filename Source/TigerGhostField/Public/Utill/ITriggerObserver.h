@@ -14,4 +14,6 @@ class TIGERGHOSTFIELD_API ITriggerObserver
 {
     GENERATED_BODY()
 
+public:
+    virtual void OnStatChanged(FName StatName, class ABaseCharacter* Owner) = 0;
 };
