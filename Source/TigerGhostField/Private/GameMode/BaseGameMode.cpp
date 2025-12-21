@@ -21,5 +21,4 @@ void ABaseGameMode::OnGameStart_Implementation()
 
 void ABaseGameMode::OnGameEnd_Implementation()
 {
-
 }

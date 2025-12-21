@@ -43,9 +43,14 @@ void ABaseCharacter::SetPhysicalAttackCoefficient()
     PhysicalAttackCoefficient = FMath::Clamp(0.75f * StaminaPercent + 65.f, 80.f, 140.f);
 }
 
-void ABaseCharacter::AddStatTrigger(ITriggerObserver* Trigger)
+void ABaseCharacter::AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger)
 {
-    if (Trigger && !StatTriggers.Contains(Trigger))
+    if (!Trigger)
+    {
+        return;
+    }
+
+    if (!StatTriggers.Contains(Trigger))
     {
         StatTriggers.Add(Trigger);
     }
@@ -65,14 +70,14 @@ void ABaseCharacter::ConsumeStat(uint8 Type, float Amount)
     {
         if (LastConsumedType == Type)
         {
-            ConsecutiveSameConsumption++;
+            ConsecutiveSameActionCount++;
         }
         else
         {
             LastConsumedType = Type;
-            ConsecutiveSameConsumption = 1;
+            ConsecutiveSameActionCount = 1;
         }
-        UE_LOG(LogTemp, Warning, TEXT("Weak: Type=%d, Consecutive=%d"), Type, ConsecutiveSameConsumption);
+        UE_LOG(LogTemp, Warning, TEXT("Weak: Type=%d, Consecutive=%d"), Type, ConsecutiveSameActionCount);
     }
 
     FName StatName;
@@ -95,7 +100,7 @@ void ABaseCharacter::ConsumeStat(uint8 Type, float Amount)
 
 void ABaseCharacter::NotifyStatChanged(FName StatName)
 {
-    for (ITriggerObserver* Trigger : StatTriggers)
+    for (const TScriptInterface<ITriggerObserver>& Trigger : StatTriggers)
     {
         if (Trigger)
         {

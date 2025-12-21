@@ -1,4 +1,7 @@
 #include "HPTrigger.h"
+#include "Character/ABaseCharacter.h"
+
+class ABaseCharacter;
 
 void UHPTrigger::OnStatChanged(FName StatName, ABaseCharacter* Owner)
 {

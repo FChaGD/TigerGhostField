@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Character/ICharacterInterface.h"
+#include "Utill/ITriggerObserver.h"
 #include "ABaseCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -53,7 +54,7 @@ private:
 	EMentalityState MentalityState = EMentalityState::Normal;
 
 public:
-	void AddStatTrigger(ITriggerObserver* Trigger);
+	void AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger);
 	void ConsumeStat(uint8 Type, float Amount);
 private:
 	void NotifyStatChanged(FName StatName);
@@ -79,7 +80,7 @@ private:
 	virtual void Death();
 
 	UPROPERTY()
-	TArray<class ITriggerObserver*> StatTriggers;
+	TArray<TScriptInterface<ITriggerObserver>> StatTriggers;
 
 public:
 	/** Constructor that sets default values for the character's properties. */
