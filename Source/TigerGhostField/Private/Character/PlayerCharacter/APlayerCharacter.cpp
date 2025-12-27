@@ -57,11 +57,13 @@ void APlayerCharacter::Input_RunComplete(const FInputActionValue& InputActionVal
 void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionValue)
 {
     UE_LOG(LogTemp, Warning, TEXT("Light Attack"));
+    RequestAttack(EAttackInput::Light);
 }
 
 void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
 {
     UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
+    RequestAttack(EAttackInput::Heavy);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

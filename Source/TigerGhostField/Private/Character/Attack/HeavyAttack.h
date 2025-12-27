@@ -13,5 +13,7 @@ UCLASS()
 class UHeavyAttack : public UAttackBase
 {
 	GENERATED_BODY()
-	
+
+protected:
+	virtual void Execute() override;
 };

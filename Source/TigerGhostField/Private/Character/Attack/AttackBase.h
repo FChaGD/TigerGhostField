@@ -20,8 +20,8 @@ public:
 	~UAttackBase();
 
 protected:
-
 	float BaseDamge;
 	
+public:
 	virtual void Execute();
 };

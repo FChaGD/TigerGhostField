@@ -1,5 +1,6 @@
 #include "Character/ABaseCharacter.h"
 #include "Math/UnrealMathUtility.h"
+#include "Character/Attack/AttackBase.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -11,6 +12,27 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	//ToDo : StateReset
+}
+
+void ABaseCharacter::RequestAttack(EAttackInput Ininput)
+{
+    if (bIsDead) return;
+
+    TSubclassOf<UAttackBase> AttackClass = nullptr;
+    switch (Ininput)
+    {
+    case EAttackInput::Light: 
+        AttackClass = AttackClassSet.LightAttackClass; 
+        break;
+    case EAttackInput::Heavy: 
+        AttackClass = AttackClassSet.HeavyAttackClass;
+        break;
+    }
+
+    if (!AttackClass) return;
+
+    CurrentAttack = NewObject<UAttackBase>(this, AttackClass);
+    CurrentAttack->Execute();
 }
 
 void ABaseCharacter::CalculateDamage(const FAttackParams& attackParam)

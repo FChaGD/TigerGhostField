@@ -3,3 +3,7 @@
 
 #include "Character/Attack/LightAttack.h"
 
+void ULightAttack::Execute()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Lighty Attack Execute"));
+}

@@ -13,5 +13,7 @@ UCLASS()
 class ULightAttack : public UAttackBase
 {
 	GENERATED_BODY()
-	
+
+protected:
+	virtual void Execute() override;
 };
