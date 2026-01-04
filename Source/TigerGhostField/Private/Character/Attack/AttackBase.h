@@ -21,6 +21,7 @@ public:
 
 protected:
 	float BaseDamge;
+	int combo;
 	
 public:
 	virtual void Execute();

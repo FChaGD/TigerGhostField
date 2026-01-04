@@ -3,11 +3,12 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
 #include "InputAction.h"
 #include "EnhancedInputSubsystems.h"
 #include "DataAssets/DA_InputDataAsset.h"
 #include "Component/Input/PlayerEnhancedInputComponent.h"
+#include "Component/Factory/AttackFactory.h"
+#include "Character/Attack/AttackBase.h"
 
 void APlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
@@ -57,13 +58,27 @@ void APlayerCharacter::Input_RunComplete(const FInputActionValue& InputActionVal
 void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionValue)
 {
     UE_LOG(LogTemp, Warning, TEXT("Light Attack"));
-    RequestAttack(EAttackInput::Light);
+    CurrentAttack = AttackFactory->CreateAttack(EAttackInput::Light, 0);
+    if (CurrentAttack)
+    {
+        CurrentAttack->Execute();
+    }
+    else {
+        UE_LOG(LogTemp, Warning, TEXT("NO Light Attack"));
+    }
 }
 
 void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
 {
     UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
-    RequestAttack(EAttackInput::Heavy);
+    CurrentAttack = AttackFactory->CreateAttack(EAttackInput::Heavy, 0);
+    if (CurrentAttack)
+    {
+        CurrentAttack->Execute();
+    }
+    else {
+        UE_LOG(LogTemp, Warning, TEXT("NO Heavy Attack"));
+    }
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

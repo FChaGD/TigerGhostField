@@ -14,6 +14,7 @@
 
 struct FAttackClassSet;
 class UBaseAttack;
+class UAttackFactory;
 
 UENUM(BlueprintType)
 enum class EMentalityState : uint8
@@ -88,13 +89,9 @@ private:
 	TArray<TScriptInterface<ITriggerObserver>> StatTriggers;
 
 protected:
-	// 공격 클래스 세트 (팩토리 입력)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
-	FAttackClassSet AttackClassSet;
-
 	// 현재 실행 중인 공격
 	UPROPERTY(Transient)
-	TObjectPtr<UAttackBase> CurrentAttack;
+	UAttackBase* CurrentAttack;
 
 public:
 	/** Constructor that sets default values for the character's properties. */
@@ -104,7 +101,10 @@ protected:
 	/** Called when the game starts or when spawned. */
 	virtual void BeginPlay() override;
 
-	void RequestAttack(EAttackInput Ininput);
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+
+	TSubclassOf<UAttackFactory> AttackFactoryClass;
+	UAttackFactory* AttackFactory;
 
 private:
 
