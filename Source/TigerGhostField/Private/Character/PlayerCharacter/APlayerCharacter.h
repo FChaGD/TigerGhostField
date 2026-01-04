@@ -1,5 +1,7 @@
+// APlayerCharacter.h
 // Author: kwak hyonbin
-// Description: Player-controlled character class handling combat interaction notifications, camera control, input binding, and race transformation (form swap).
+// Description: Player-controlled character class handling combat interaction notifications, camera control, input binding,
+//              and race transformation (form swap).
 
 #pragma once
 
@@ -12,10 +14,10 @@
 #include "PlayerData/RaceTypes.h"
 #include "APlayerCharacter.generated.h"
 
+// Forward declarations
 class USpringArmComponent;
 class UCameraComponent;
 class UDA_InputDataAsset;
-class UDA_RaceForm;
 struct FInputActionValue;
 
 UCLASS()
@@ -25,6 +27,13 @@ class TIGERGHOSTFIELD_API APlayerCharacter : public ABaseCharacter
 
 public:
     APlayerCharacter();
+
+
+protected:
+    virtual void BeginPlay() override;
+
+private:
+    void ApplyHumanAsDefaultMesh();
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
     void AttackNotificationEvent(ECombatInteractionType inputNotificationEvent);
@@ -48,9 +57,9 @@ private:
     static FString GetCombatInteractionName(ECombatInteractionType Type);
 
     TQueue<ECombatInteractionType> NotificationEventPop;
+
     void ProcessNextNotification();
     void AttackNotification();
-
     void Attack();
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
@@ -65,28 +74,10 @@ private:
 
     void Input_Move(const FInputActionValue& InputActionValue);
     void Input_Look(const FInputActionValue& InputActionValue);
-
     void Input_RunTrigger(const FInputActionValue& InputActionValue);
     void Input_RunComplete(const FInputActionValue& InputActionValue);
-
     void Input_LightAttack(const FInputActionValue& InputActionValue);
     void Input_HeavyAttack(const FInputActionValue& InputActionValue);
-#pragma endregion
-
-#pragma region Race
-private:
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
-    ERaceType DefaultRaceType = ERaceType::RaceA;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
-    ERaceType CurrentRaceType = ERaceType::RaceA;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
-    TMap<ERaceType, TObjectPtr<UDA_RaceForm>> OwnedRaceForms;
-
-    UFUNCTION(BlueprintCallable, Category = "Race")
-    bool TransformToRace(ERaceType TargetRaceType);
-
-    void ApplyRaceForm(const UDA_RaceForm* Form);
+    void Input_RaceTransform(const FInputActionValue& InputActionValue);
 #pragma endregion
 };

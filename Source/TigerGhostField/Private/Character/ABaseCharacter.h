@@ -1,3 +1,4 @@
+// ABaseCharacter.h
 // Author: kwak hyonbin
 // Description: Base character class providing core properties such as health and stamina,
 //              and implementing the ICharacterInterface for handling combat interactions.
@@ -9,114 +10,179 @@
 #include "Character/ICharacterInterface.h"
 #include "Utill/ITriggerObserver.h"
 #include "TypeZone/ZoneAffectComponent.h"
+#include "Character/Attack/AttackTypes.h"
+#include "Character/PlayerCharacter/PlayerData/RaceTypes.h"
+
+// NOTE: This must be the LAST include in this header.
 #include "ABaseCharacter.generated.h"
 
+// Forward declarations
+struct FAttackClassSet;
+class UAttackBase;
+class UAttackFactory;
+class UDA_RaceForm;
+
+// Mentality state definition
 UENUM(BlueprintType)
 enum class EMentalityState : uint8
 {
-	Normal UMETA(DisplayName = "Normal"),   // Default state
-	Weak   UMETA(DisplayName = "Weak"),     // Mentality reached 0
-	Fragile UMETA(DisplayName = "Fragile")  // After repeating same action 3 times in Weak state
+    Normal   UMETA(DisplayName = "Normal"),
+    Weak     UMETA(DisplayName = "Weak"),
+    Fragile  UMETA(DisplayName = "Fragile")
 };
 
-//Implements core character functionality including health, stamina, and death handling.
-//Inherits from ACharacter for Unreal Engine character behavior and ICharacterInterface
-//for standardized combat interactions.
 UCLASS()
 class ABaseCharacter : public ACharacter, public ICharacterInterface
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
+
 private:
-	//--------------------------------
-	int HpStatPoint = 0;
-	int StaminaStatPoint = 0;
-	int MentalityStatPoint = 0;
-	int SpiritualPowerStatPoint = 0;
-	int AttackPowerStatPoint = 0;
+    // ------------------------------
+    // Stat point values
+    int HpStatPoint = 0;
+    int StaminaStatPoint = 0;
+    int MentalityStatPoint = 0;
+    int SpiritualPowerStatPoint = 0;
+    int AttackPowerStatPoint = 0;
 
-	//--------------------------------
-	float Hp = 100.f;
-	float MaxHp = 100.f;
+    // ------------------------------
+    // Health related values
+    float Hp = 100.f;
+    float MaxHp = 100.f;
 
-	float PhysicalDef = 0.f;
-	void SetPhysicalDef();
-	//--------------------------------
-	float Stamina = 100.f;
-	float MaxStamina = 100.f;
+    // Physical defense value
+    float PhysicalDef = 0.f;
+    void SetPhysicalDef();
 
-	float PhysicalAttackCoefficient = 100.f;
-	void SetPhysicalAttackCoefficient();
-	//--------------------------------
-	float Mentality = 100.f;
-	float MaxMentality = 100.f;
+    // ------------------------------
+    // Stamina related values
+    float Stamina = 100.f;
+    float MaxStamina = 100.f;
 
-	uint8 LastConsumedType = 255;
-	int32 ConsecutiveSameActionCount = 0;
-	EMentalityState MentalityState = EMentalityState::Normal;
+    // Physical attack coefficient
+    float PhysicalAttackCoefficient = 100.f;
+    void SetPhysicalAttackCoefficient();
+
+    // ------------------------------
+    // Mentality related values
+    float Mentality = 100.f;
+    float MaxMentality = 100.f;
+
+    // Last consumed action type
+    uint8 LastConsumedType = 255;
+
+    // Count of consecutive identical actions
+    int32 ConsecutiveSameActionCount = 0;
+
+    // Current mentality state
+    EMentalityState MentalityState = EMentalityState::Normal;
 
 public:
-	void AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger);
-	void ConsumeStat(uint8 Type, float Amount);
+    // Registers a stat trigger observer
+    void AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger);
+
+    // Consumes a stat by type and amount
+    void ConsumeStat(uint8 Type, float Amount);
+
 private:
-	void NotifyStatChanged(FName StatName);
+    // Notifies observers that a stat value has changed
+    void NotifyStatChanged(FName StatName);
 
-	void SetMentalityState();
-	float RecoveryCoefficient = 100.f;
-	void SetRecoveryCoefficient();
-	float DamageReceivedCoefficient = 100.f;
-	void SetDamageReceivedCoefficient();
-	//--------------------------------
-	float SpiritualPower = 100.f;
-	float MaxSpiritualPower = 100.f;
+    // Updates mentality state based on current conditions
+    void SetMentalityState();
 
-	float SpiritualDef = 0.f;
-	void SetSpirituallDef();
-	float SpiritualAttackCoefficient = 100.f;
-	void SetSpirituallSpiritualAttackCoefficient();
-	//--------------------------------
-	float AttackPower = 100.f;
+    // Recovery coefficient applied to regeneration logic
+    float RecoveryCoefficient = 100.f;
+    void SetRecoveryCoefficient();
 
-	//--------------------------------
-	bool bIsDead = false;
-	virtual void Death();
+    // Damage received coefficient applied to incoming damage
+    float DamageReceivedCoefficient = 100.f;
+    void SetDamageReceivedCoefficient();
 
-	UPROPERTY()
-	TArray<TScriptInterface<ITriggerObserver>> StatTriggers;
+    // ------------------------------
+    // Spiritual power related values
+    float SpiritualPower = 100.f;
+    float MaxSpiritualPower = 100.f;
 
-public:
-	/** Constructor that sets default values for the character's properties. */
-	ABaseCharacter();
+    // Spiritual defense value
+    float SpiritualDef = 0.f;
+    void SetSpirituallDef();
+
+    // Spiritual attack coefficient
+    float SpiritualAttackCoefficient = 100.f;
+    void SetSpirituallSpiritualAttackCoefficient();
+
+    // ------------------------------
+    // Base attack power
+    float AttackPower = 100.f;
+
+    // ------------------------------
+    // Death state flag
+    bool bIsDead = false;
+
+    // Handles character death logic
+    virtual void Death();
+
+    // Registered stat trigger observers
+    UPROPERTY()
+    TArray<TScriptInterface<ITriggerObserver>> StatTriggers;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Zone")
-	TObjectPtr<UZoneAffectComponent> ZoneAffect = nullptr;
+    // Currently executing attack instance
+    UPROPERTY(Transient)
+    UAttackBase* CurrentAttack = nullptr;
 
-	UFUNCTION(BlueprintCallable, Category = "Zone")
-	EZoneType GetZoneType() const
-	{
-		return ZoneAffect ? ZoneAffect->GetCurrentZoneType() : EZoneType::None;
-	}
+public:
+    // Constructor that sets default values for the character's properties
+    ABaseCharacter();
 
 protected:
-	/** Called when the game starts or when spawned. */
-	virtual void BeginPlay() override;
+    // Zone affect component reference
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Zone")
+    TObjectPtr<UZoneAffectComponent> ZoneAffect = nullptr;
 
-private:
+    // Returns the current zone type affecting this character
+    UFUNCTION(BlueprintCallable, Category = "Zone")
+    EZoneType GetZoneType() const
+    {
+        return ZoneAffect ? ZoneAffect->GetCurrentZoneType() : EZoneType::None;
+    }
 
-	//ToDo : 30FrameTrigger
+protected:
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
+
+    // Attack factory class reference
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+    TSubclassOf<UAttackFactory> AttackFactoryClass;
+
+    // Attack factory instance
+    UAttackFactory* AttackFactory = nullptr;
+
 public:
-	/**
-	 * Calculates the effective damage of an incoming attack based on the character's
-	 * current defensive state and the attack's interaction type.
-	 * This does not directly modify the character's health; it only determines
-	 * how much damage would be applied if the attack were resolved.
-	 *
-	 * @param attackParam Struct containing attack details such as raw damage and interaction type.
-	 */
-	virtual void CalculateDamage(const FAttackParams& attackParam) override;
+    // Calculates effective damage of an incoming attack based on defense state
+    virtual void CalculateDamage(const FAttackParams& attackParam) override;
 
-	/**
-	 * Handles the character's death, setting the dead flag and performing any additional logic.
-	 */
+#pragma region Race
+protected:
+    // Default race type assigned to this character
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
+    ERaceType DefaultRaceType = ERaceType::Human;
 
+    // Current race type applied to this character
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
+    ERaceType CurrentRaceType = ERaceType::Human;
+
+    // Owned race forms mapped by race type (if missing, transform is canceled)
+    UPROPERTY(EditDefaultsOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
+    TMap<ERaceType, TObjectPtr<UDA_RaceForm>> OwnedRaceForms;
+
+protected:
+    // Transforms this character to the target race type if data is available
+    UFUNCTION(BlueprintCallable, Category = "Race")
+    bool TransformToRace(ERaceType TargetRaceType);
+
+    // Applies the minimum stable subset of a race form (mesh only for now)
+    void ApplyRaceFormMinimal(const UDA_RaceForm* Form);
+#pragma endregion
 };

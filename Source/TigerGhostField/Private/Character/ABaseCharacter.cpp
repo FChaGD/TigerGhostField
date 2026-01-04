@@ -1,16 +1,32 @@
+// ABaseCharacter.cpp
+// Author: kwak hyonbin
+// Description: Base character class implementing stats / combat calculations.
+// NOTE: Race related behavior is added (minimal mesh swap only).
+
 #include "Character/ABaseCharacter.h"
 #include "Math/UnrealMathUtility.h"
+#include "Character/Attack/AttackBase.h"
+#include "Component/Factory/AttackFactory.h"
+
+// NOTE: Race form data asset
+#include "Character/PlayerCharacter/PlayerData/UDA_RaceForm.h"
+#include "Components/SkeletalMeshComponent.h"
 
 ABaseCharacter::ABaseCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = true;
     ZoneAffect = CreateDefaultSubobject<UZoneAffectComponent>(TEXT("ZoneAffect"));
 }
 
 void ABaseCharacter::BeginPlay()
 {
-	Super::BeginPlay();
-	//ToDo : StateReset
+    Super::BeginPlay();
+
+    AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
+    //ToDo : StateReset
+
+    // NOTE: Apply default race if data exists. If not, keep original mesh as-is.
+    TransformToRace(DefaultRaceType);
 }
 
 void ABaseCharacter::CalculateDamage(const FAttackParams& attackParam)
@@ -132,7 +148,6 @@ void ABaseCharacter::SetMentalityState()
     }
 }
 
-
 void ABaseCharacter::SetRecoveryCoefficient()
 {
     float MentalityPercent = (MaxMentality > 0.f) ? (Mentality / MaxMentality * 100.f) : 100.f;
@@ -162,5 +177,57 @@ void ABaseCharacter::SetSpirituallSpiritualAttackCoefficient()
 void ABaseCharacter::Death()
 {
     //ToDo : HPCheck
-	bIsDead = true;
+    bIsDead = true;
+}
+
+bool ABaseCharacter::TransformToRace(ERaceType TargetRaceType)
+{
+    if (TargetRaceType == CurrentRaceType)
+    {
+        return true;
+    }
+
+    const TObjectPtr<UDA_RaceForm>* FoundPtr = OwnedRaceForms.Find(TargetRaceType);
+    if (!FoundPtr || !(*FoundPtr))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Race] Transform canceled: No data for target race"));
+        return false;
+    }
+
+    const UDA_RaceForm* Form = (*FoundPtr);
+    if (!Form->IsValidForm())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Race] Transform canceled: Invalid form data"));
+        return false;
+    }
+
+    ApplyRaceFormMinimal(Form);
+    CurrentRaceType = TargetRaceType;
+    return true;
+}
+
+void ABaseCharacter::ApplyRaceFormMinimal(const UDA_RaceForm* Form)
+{
+    if (!Form)
+    {
+        return;
+    }
+
+    USkeletalMeshComponent* MeshComp = GetMesh();
+    if (!MeshComp)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Race] ApplyRaceFormMinimal: Mesh component is null"));
+        return;
+    }
+
+    if (!Form->SkeletalMesh)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Race] ApplyRaceFormMinimal: SkeletalMesh is null"));
+        return;
+    }
+
+    // NOTE: Minimal stable apply - mesh swap only
+    MeshComp->SetSkeletalMesh(Form->SkeletalMesh);
+
+    UE_LOG(LogTemp, Log, TEXT("[Race] Applied minimal form (mesh only): %d"), static_cast<int32>(Form->RaceType));
 }

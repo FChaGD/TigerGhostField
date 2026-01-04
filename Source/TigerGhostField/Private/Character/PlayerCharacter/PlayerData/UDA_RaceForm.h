@@ -22,7 +22,7 @@ class TIGERGHOSTFIELD_API UDA_RaceForm : public UDataAsset
 public:
     // NOTE: This key should match the owning map key in APlayerCharacter::OwnedRaceForms.
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Race")
-    ERaceType RaceType = ERaceType::RaceA;
+    ERaceType RaceType = ERaceType::Human;
 
 #pragma region Form_Appearance
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Form|Appearance")
