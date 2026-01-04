@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "Character/ICharacterInterface.h"
 #include "Utill/ITriggerObserver.h"
+#include "TypeZone/ZoneAffectComponent.h"
 #include "ABaseCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -85,6 +86,16 @@ private:
 public:
 	/** Constructor that sets default values for the character's properties. */
 	ABaseCharacter();
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Zone")
+	TObjectPtr<UZoneAffectComponent> ZoneAffect = nullptr;
+
+	UFUNCTION(BlueprintCallable, Category = "Zone")
+	EZoneType GetZoneType() const
+	{
+		return ZoneAffect ? ZoneAffect->GetCurrentZoneType() : EZoneType::None;
+	}
 
 protected:
 	/** Called when the game starts or when spawned. */

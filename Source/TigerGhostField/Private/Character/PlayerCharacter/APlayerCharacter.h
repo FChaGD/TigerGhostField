@@ -1,5 +1,5 @@
 // Author: kwak hyonbin
-// Description:
+// Description: Player-controlled character class handling combat interaction notifications, camera control, input binding, and race transformation (form swap).
 
 #pragma once
 
@@ -8,77 +8,85 @@
 #include "Character/FCombatStructs.h"
 #include "Delegates/DelegateCombinations.h"
 #include "Character/ABaseCharacter.h"
+#include "Containers/Queue.h"
+#include "PlayerData/RaceTypes.h"
 #include "APlayerCharacter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UDA_InputDataAsset;
+class UDA_RaceForm;
 struct FInputActionValue;
 
 UCLASS()
 class TIGERGHOSTFIELD_API APlayerCharacter : public ABaseCharacter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	// Constructor that sets default values for the player character's properties.
-	APlayerCharacter();
+    APlayerCharacter();
 
-	// Combat notification entry point
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void AttackNotificationEvent(ECombatInteractionType inputNotificationEvent);
+    UFUNCTION(BlueprintCallable, Category = "Combat")
+    void AttackNotificationEvent(ECombatInteractionType inputNotificationEvent);
 
-	// Damage calculation override
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	virtual void CalculateDamage(const FAttackParams& attackParam) override;
+    UFUNCTION(BlueprintCallable, Category = "Combat")
+    virtual void CalculateDamage(const FAttackParams& attackParam) override;
 
 protected:
-	// Input binding
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	// Indicates the character's baseline defensive state when no specific input is provided.
-	ECombatInteractionType DefaultDeffenceType;
+    ECombatInteractionType DefaultDeffenceType;
+    ECombatInteractionType CurrentDeffenceType;
+    ECombatInteractionType InputDeffenceType;
 
-	// Represents the defensive type currently active for hit detection.
-	ECombatInteractionType CurrentDeffenceType;
+    static constexpr int32 HeadWidgetCount = static_cast<int32>(ECombatInteractionType::MAX);
 
-	// Stores the defensive type requested by player input.
-	ECombatInteractionType InputDeffenceType;
+    UPROPERTY(VisibleAnywhere, Category = "UI")
+    TArray<TObjectPtr<UWidgetComponent>> HeadWidgets;
 
-	static constexpr int32 HeadWidgetCount = static_cast<int32>(ECombatInteractionType::MAX);
+    static FString GetCombatInteractionName(ECombatInteractionType Type);
 
-	UPROPERTY(VisibleAnywhere, Category = "UI")
-	TArray<TObjectPtr<UWidgetComponent>> HeadWidgets;
+    TQueue<ECombatInteractionType> NotificationEventPop;
+    void ProcessNextNotification();
+    void AttackNotification();
 
-	static FString GetCombatInteractionName(ECombatInteractionType Type);
+    void Attack();
 
-	// Combat notification queue
-	TQueue<ECombatInteractionType> NotificationEventPop;
-	void ProcessNextNotification();
-	void AttackNotification();
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+    USpringArmComponent* CameraBoom;
 
-	void Attack();
-
-	// Camera Components Start
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
-	// Camera Components End
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+    UCameraComponent* FollowCamera;
 
 #pragma region Inputs
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
-	UDA_InputDataAsset* InputDataAsset;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
+    UDA_InputDataAsset* InputDataAsset;
 
-	void Input_Move(const FInputActionValue& InputActionValue);
-	void Input_Look(const FInputActionValue& InputActionValue);
+    void Input_Move(const FInputActionValue& InputActionValue);
+    void Input_Look(const FInputActionValue& InputActionValue);
 
-	void Input_RunTrigger(const FInputActionValue& InputActionValue);
-	void Input_RunComplete(const FInputActionValue& InputActionValue);
+    void Input_RunTrigger(const FInputActionValue& InputActionValue);
+    void Input_RunComplete(const FInputActionValue& InputActionValue);
 
-	void Input_LightAttack(const FInputActionValue& InputActionValue);
-	void Input_HeavyAttack(const FInputActionValue& InputActionValue);
+    void Input_LightAttack(const FInputActionValue& InputActionValue);
+    void Input_HeavyAttack(const FInputActionValue& InputActionValue);
+#pragma endregion
+
+#pragma region Race
+private:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
+    ERaceType DefaultRaceType = ERaceType::RaceA;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
+    ERaceType CurrentRaceType = ERaceType::RaceA;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
+    TMap<ERaceType, TObjectPtr<UDA_RaceForm>> OwnedRaceForms;
+
+    UFUNCTION(BlueprintCallable, Category = "Race")
+    bool TransformToRace(ERaceType TargetRaceType);
+
+    void ApplyRaceForm(const UDA_RaceForm* Form);
 #pragma endregion
 };

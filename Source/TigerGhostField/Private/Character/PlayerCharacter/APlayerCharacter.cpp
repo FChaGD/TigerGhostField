@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "DataAssets/DA_InputDataAsset.h"
 #include "Component/Input/PlayerEnhancedInputComponent.h"
+#include "PlayerData/UDA_RaceForm.h"
 
 void APlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
@@ -62,6 +63,38 @@ void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionVal
 void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
 {
     UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
+}
+
+bool APlayerCharacter::TransformToRace(ERaceType TargetRaceType)
+{
+    return false;
+}
+
+void APlayerCharacter::ApplyRaceForm(const UDA_RaceForm* Form)
+{
+    // TODO: Validate Form pointer before applying any changes.
+    // TODO: Cache previous race-related parameters if rollback support is required.
+
+    // TODO: Apply skeletal mesh defined by the race form.
+    // TODO: Apply animation instance class associated with the race form.
+
+    // TODO: Update capsule size (radius / half-height) based on race form data.
+    // NOTE: Capsule size changes may affect collision and should be applied before movement updates.
+
+    // TODO: Update mesh relative transform to match the new capsule configuration.
+
+    // TODO: Apply movement parameters (e.g., MaxWalkSpeed, JumpZVelocity).
+    // NOTE: Movement parameters must be applied after capsule changes to avoid physics inconsistencies.
+
+    // TODO: Reset or synchronize animation state if required by the new race form.
+    // NOTE: Ensure no invalid animation state is carried over from the previous race.
+
+    // TODO: Update CurrentRaceType after successful application of the form.
+
+    // TODO: Trigger race change related events (UI refresh, effects, sound).
+    // NOTE: Do not trigger gameplay logic here; this function should remain a pure form-application step.
+
+    // FIXME: Verify edge cases when transforming during airborne or hit-reaction states.
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
