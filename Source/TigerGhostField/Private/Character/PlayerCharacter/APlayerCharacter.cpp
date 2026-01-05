@@ -9,6 +9,7 @@
 #include "Component/Input/PlayerEnhancedInputComponent.h"
 #include "Component/Factory/AttackFactory.h"
 #include "Character/Attack/AttackBase.h"
+#include "Character/Potion/PotionBase.h"
 
 void APlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
@@ -58,10 +59,9 @@ void APlayerCharacter::Input_RunComplete(const FInputActionValue& InputActionVal
 void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionValue)
 {
     UE_LOG(LogTemp, Warning, TEXT("Light Attack"));
-    CurrentAttack = AttackFactory->CreateAttack(EAttackInput::Light, 0);
-    if (CurrentAttack)
+    if (CurrentLightAttack)
     {
-        CurrentAttack->Execute();
+        CurrentLightAttack->Execute();
     }
     else {
         UE_LOG(LogTemp, Warning, TEXT("NO Light Attack"));
@@ -71,10 +71,21 @@ void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionVal
 void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
 {
     UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
-    CurrentAttack = AttackFactory->CreateAttack(EAttackInput::Heavy, 0);
-    if (CurrentAttack)
+    if (CurrentHeavyAttack)
     {
-        CurrentAttack->Execute();
+        CurrentHeavyAttack->Execute();
+    }
+    else {
+        UE_LOG(LogTemp, Warning, TEXT("NO Heavy Attack"));
+    }
+}
+
+void APlayerCharacter::Input_Potion(const FInputActionValue& InputActionValue)
+{
+    UE_LOG(LogTemp, Warning, TEXT("Input Potion"));
+    if (CurrentPotion)
+    {
+        CurrentPotion->Execute();
     }
     else {
         UE_LOG(LogTemp, Warning, TEXT("NO Heavy Attack"));
@@ -138,6 +149,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         ETriggerEvent::Started,
         this,
         &ThisClass::Input_HeavyAttack);
+    
+    PlayerInput->BindInputAction(
+        InputDataAsset->PotionInputAction,
+        ETriggerEvent::Started,
+        this,
+        &ThisClass::Input_Potion);
 }
 
 void APlayerCharacter::CalculateDamage(const FAttackParams& attackParam)

@@ -80,5 +80,7 @@ private:
 
 	void Input_LightAttack(const FInputActionValue& InputActionValue);
 	void Input_HeavyAttack(const FInputActionValue& InputActionValue);
+	
+	void Input_Potion(const FInputActionValue& InputActionValue);
 #pragma endregion
 };

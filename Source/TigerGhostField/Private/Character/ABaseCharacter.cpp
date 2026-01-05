@@ -2,6 +2,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "Character/Attack/AttackBase.h"
 #include "Component/Factory/AttackFactory.h"
+#include "Component/Factory/PotionFactory.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -13,7 +14,14 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+    // Attack Create Factory
     AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
+    CurrentLightAttack = AttackFactory->CreateLightAttack(0);
+    CurrentHeavyAttack = AttackFactory->CreateHeavyAttack(0);
+    
+    // Potion Create Factory
+    PotionFactory = NewObject<UPotionFactory>(this, PotionFactoryClass);
+    CurrentPotion = PotionFactory->CreatePotion(0);
 	//ToDo : StateReset
 }
 

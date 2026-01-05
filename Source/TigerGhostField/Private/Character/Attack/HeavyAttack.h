@@ -14,6 +14,6 @@ class UHeavyAttack : public UAttackBase
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	virtual void Execute() override;
 };

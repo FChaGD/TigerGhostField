@@ -13,8 +13,10 @@
 #include "ABaseCharacter.generated.h"
 
 struct FAttackClassSet;
+class UPotionBase;
 class UBaseAttack;
 class UAttackFactory;
+class UPotionFactory;
 
 UENUM(BlueprintType)
 enum class EMentalityState : uint8
@@ -89,22 +91,43 @@ private:
 	TArray<TScriptInterface<ITriggerObserver>> StatTriggers;
 
 protected:
-	// 현재 실행 중인 공격
-	UPROPERTY(Transient)
-	UAttackBase* CurrentAttack;
+	// Current Light Attack Object
+	UPROPERTY(VisibleAnywhere)
+	ULightAttack* CurrentLightAttack;
+	
+	// Current Heavy Attack Object
+	UPROPERTY(VisibleAnywhere)
+	UHeavyAttack* CurrentHeavyAttack;
+	
+	// Current Potion Object
+	UPROPERTY(VisibleAnywhere)
+	UPotionBase* CurrentPotion;
 
 public:
 	/** Constructor that sets default values for the character's properties. */
 	ABaseCharacter();
+	
+	
 
 protected:
 	/** Called when the game starts or when spawned. */
 	virtual void BeginPlay() override;
 
+	// AttackFactory Class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-
 	TSubclassOf<UAttackFactory> AttackFactoryClass;
+	
+	// Attak Create Factory
+	UPROPERTY()
 	UAttackFactory* AttackFactory;
+	
+	// PotionFactory Class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<UPotionFactory> PotionFactoryClass;
+	
+	// Potion Create Factory
+	UPROPERTY()
+	UPotionFactory* PotionFactory;
 
 private:
 

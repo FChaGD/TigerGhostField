@@ -14,6 +14,6 @@ class ULightAttack : public UAttackBase
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	virtual void Execute() override;
 };

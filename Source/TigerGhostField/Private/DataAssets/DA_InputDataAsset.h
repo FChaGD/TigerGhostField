@@ -34,4 +34,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* HeavyAttackInputAction;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UInputAction* PotionInputAction;
 };
