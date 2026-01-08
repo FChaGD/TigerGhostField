@@ -9,11 +9,12 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class UWraithPotion : public UPotionBase
 {
 	GENERATED_BODY()
 	
 public:
+	UWraithPotion();
 	virtual void Execute() override;
 };

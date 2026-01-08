@@ -1,8 +1,11 @@
 #include "Character/ABaseCharacter.h"
+
+#include "DebugHelper.h"
 #include "Math/UnrealMathUtility.h"
 #include "Character/Attack/AttackBase.h"
 #include "Component/Factory/AttackFactory.h"
 #include "Component/Factory/PotionFactory.h"
+#include "Potion/PotionBase.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -22,6 +25,7 @@ void ABaseCharacter::BeginPlay()
     // Potion Create Factory
     PotionFactory = NewObject<UPotionFactory>(this, PotionFactoryClass);
     CurrentPotion = PotionFactory->CreatePotion(0);
+    CurrentPotion->Initialize(this,0, EPotionState::Ready);
 	//ToDo : StateReset
 }
 
@@ -109,6 +113,47 @@ void ABaseCharacter::ConsumeStat(uint8 Type, float Amount)
     SetMentalityState();
     SetRecoveryCoefficient();
     SetDamageReceivedCoefficient();
+}
+
+float ABaseCharacter::GetMentalityPercent() const
+{
+    return Mentality / MaxMentality;
+}
+
+float ABaseCharacter::GetMaxMentality() const
+{
+    return MaxMentality;
+}
+
+float ABaseCharacter::GetMaxStamina() const
+{
+    return MaxStamina;
+}
+
+float ABaseCharacter::GetMaxHp() const
+{
+    return MaxHp;
+}
+
+void ABaseCharacter::SetHp(float InHp)
+{
+    Hp = FMath::Clamp(Hp + InHp, 0, MaxHp);
+    
+    Debug::Print(TEXT("Hp Set : %f"), Hp);
+}
+
+void ABaseCharacter::SetMentality(float InMentality)
+{
+    Mentality = FMath::Clamp(Mentality + InMentality, 0, MaxMentality);
+    
+    Debug::Print(TEXT("Mentality Set : %f"), Mentality);
+}
+
+void ABaseCharacter::SetStamina(float InStamina)
+{
+    Stamina = FMath::Clamp(Stamina+InStamina, 0, MaxStamina);
+    
+    Debug::Print(TEXT("Stamina Set : %f"), Stamina);
 }
 
 void ABaseCharacter::NotifyStatChanged(FName StatName)

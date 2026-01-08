@@ -9,11 +9,12 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class UYokaiPotion : public UPotionBase
 {
 	GENERATED_BODY()
 	
 public:
+	UYokaiPotion();
 	virtual void Execute() override; 
 };

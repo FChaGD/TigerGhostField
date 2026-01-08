@@ -7,6 +7,7 @@
 #include "Character/Potion/WraithPotion.h"
 #include "Character/Potion/YokaiPotion.h"
 
+// Potion 생성함수
 UPotionBase* UPotionFactory::CreatePotion(int test)
 {
 	TSubclassOf<UPotionBase> PotionClass = nullptr;

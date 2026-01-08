@@ -64,6 +64,13 @@ private:
 public:
 	void AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger);
 	void ConsumeStat(uint8 Type, float Amount);
+	float GetMentalityPercent() const;
+	float GetMaxMentality() const;
+	float GetMaxStamina() const;
+	float GetMaxHp() const;
+	void SetHp(float InHp);
+	void SetMentality(float InMentality);
+	void SetStamina(float InStamina);
 private:
 	void NotifyStatChanged(FName StatName);
 
