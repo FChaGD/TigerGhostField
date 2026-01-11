@@ -182,7 +182,9 @@ void ABaseCharacter::Death()
 
 bool ABaseCharacter::TransformToRace(ERaceType TargetRaceType)
 {
-    if (TargetRaceType == CurrentRaceType)
+    // English comment: If the same race is requested but we never applied any form yet,
+    // we must continue to apply it at least once.
+    if (TargetRaceType == CurrentRaceType && bHasAppliedRaceForm)
     {
         return true;
     }
@@ -203,6 +205,10 @@ bool ABaseCharacter::TransformToRace(ERaceType TargetRaceType)
 
     ApplyRaceFormMinimal(Form);
     CurrentRaceType = TargetRaceType;
+
+    // English comment: Mark as applied after a successful apply.
+    bHasAppliedRaceForm = true;
+
     return true;
 }
 
@@ -226,7 +232,7 @@ void ABaseCharacter::ApplyRaceFormMinimal(const UDA_RaceForm* Form)
         return;
     }
 
-    // NOTE: Minimal stable apply - mesh swap only
+    // English comment: Minimal stable apply - mesh swap only.
     MeshComp->SetSkeletalMesh(Form->SkeletalMesh);
 
     UE_LOG(LogTemp, Log, TEXT("[Race] Applied minimal form (mesh only): %d"), static_cast<int32>(Form->RaceType));

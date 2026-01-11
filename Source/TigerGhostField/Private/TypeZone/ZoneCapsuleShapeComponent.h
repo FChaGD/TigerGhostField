@@ -14,6 +14,5 @@ class UZoneCapsuleShapeComponent : public UCapsuleComponent, public IZoneShapeIn
 	GENERATED_BODY()
 
 public:
-	// Rotation-aware capsule point-inside test.
 	virtual bool IsPointInside(const FVector& WorldPoint) const override;
 };

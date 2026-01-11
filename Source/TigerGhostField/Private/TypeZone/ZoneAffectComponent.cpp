@@ -1,5 +1,8 @@
 #include "TypeZone/ZoneAffectComponent.h"
 
+#include "Components/SphereComponent.h"
+#include "TypeZone/ZoneVolumeActor.h"
+
 UZoneAffectComponent::UZoneAffectComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -21,15 +24,18 @@ void UZoneAffectComponent::BeginPlay()
 	CenterProbe->SetRelativeLocation(FVector::ZeroVector);
 	CenterProbe->SetSphereRadius(ProbeRadius);
 
-	CenterProbe->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CenterProbe->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CenterProbe->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	CenterProbe->SetCollisionProfileName(TEXT("CenterProbe"));
 	CenterProbe->SetGenerateOverlapEvents(true);
 
 	CenterProbe->OnComponentBeginOverlap.AddDynamic(this, &UZoneAffectComponent::OnProbeBeginOverlap);
 	CenterProbe->OnComponentEndOverlap.AddDynamic(this, &UZoneAffectComponent::OnProbeEndOverlap);
 
 	RefreshZoneNow();
+	UE_LOG(LogTemp, Warning, TEXT("[ZoneProbe] BeginPlay Owner=%s CenterProbe=%s Radius=%.1f"),
+		GetOwner() ? *GetOwner()->GetName() : TEXT("None"),
+		CenterProbe ? *CenterProbe->GetName() : TEXT("None"),
+		ProbeRadius);
+
 }
 
 void UZoneAffectComponent::OnProbeBeginOverlap(
@@ -40,6 +46,11 @@ void UZoneAffectComponent::OnProbeBeginOverlap(
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Warning, TEXT("[ZoneProbe] BeginOverlap OtherActor=%s OtherComp=%s"),
+		OtherActor ? *OtherActor->GetName() : TEXT("None"),
+		OtherComp ? *OtherComp->GetName() : TEXT("None"));
+
+
 	if (AZoneVolumeActor* Zone = Cast<AZoneVolumeActor>(OtherActor))
 	{
 		Candidates.Add(Zone);
@@ -67,19 +78,31 @@ AZoneVolumeActor* UZoneAffectComponent::ResolveTopZone() const
 	const FVector Center = CenterProbe->GetComponentLocation();
 
 	AZoneVolumeActor* Best = nullptr;
-	int32 BestPri = TNumericLimits<int32>::Lowest();
+	int32 BestLevel = TNumericLimits<int32>::Lowest();
+	int32 BestOrder = TNumericLimits<int32>::Lowest();
 
 	for (const TObjectPtr<AZoneVolumeActor>& Z : Candidates)
 	{
 		if (!IsValid(Z)) continue;
 		if (!Z->IsPointInside(Center)) continue;
 
-		if (!Best || Z->Priority > BestPri)
+		const int32 L = Z->ZoneLevel;
+		const int32 O = Z->SpawnOrder;
+
+		// English comment: Higher level wins. If same level, later spawn order wins.
+		const bool bBetter =
+			(!Best) ||
+			(L > BestLevel) ||
+			(L == BestLevel && O > BestOrder);
+
+		if (bBetter)
 		{
 			Best = Z.Get();
-			BestPri = Z->Priority;
+			BestLevel = L;
+			BestOrder = O;
 		}
 	}
+
 	return Best;
 }
 
@@ -90,7 +113,12 @@ void UZoneAffectComponent::ApplyResolvedZone(AZoneVolumeActor* NewZone)
 	CurrentZone = NewZone;
 	CurrentType = CurrentZone ? CurrentZone->ZoneType : EZoneType::None;
 
-	// State transition stops here.
+	// English comment: Optional debug.
+	UE_LOG(LogTemp, Warning, TEXT("[Zone] Resolved => %s Type=%d Level=%d Order=%d"),
+		CurrentZone ? *CurrentZone->GetName() : TEXT("None"),
+		static_cast<int32>(CurrentType),
+		CurrentZone ? CurrentZone->ZoneLevel : -1,
+		CurrentZone ? CurrentZone->SpawnOrder : -1);
 }
 
 void UZoneAffectComponent::RefreshZoneNow()

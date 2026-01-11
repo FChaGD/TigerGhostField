@@ -184,5 +184,8 @@ protected:
 
     // Applies the minimum stable subset of a race form (mesh only for now)
     void ApplyRaceFormMinimal(const UDA_RaceForm* Form);
+    
+    UPROPERTY(VisibleInstanceOnly, Category = "Race")
+    bool bHasAppliedRaceForm = false;
 #pragma endregion
 };

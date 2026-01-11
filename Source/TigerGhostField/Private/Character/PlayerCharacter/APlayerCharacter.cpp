@@ -77,11 +77,8 @@ void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionVal
     {
         CurrentAttack->Execute();
     }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("NO Light Attack"));
-    }
 }
+
 
 void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
 {
@@ -231,18 +228,34 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
     Super::BeginPlay();
-    ApplyHumanAsDefaultMesh();
+
+    // English comment: Character begin play.
+    UE_LOG(LogTemp, Warning, TEXT("[Player] BeginPlay Name=%s"), *GetName());
+
+    // English comment: Initial zone state from ZoneAffect.
+    const EZoneType Z = GetZoneType();
+    UE_LOG(LogTemp, Warning, TEXT("[Player] Initial ZoneType=%d"), static_cast<int32>(Z));
+
+    // English comment: Optional - print zone actor too.
+    if (ZoneAffect)
+    {
+        AZoneVolumeActor* Zone = ZoneAffect->GetCurrentZone();
+        UE_LOG(LogTemp, Warning, TEXT("[Player] Initial ZoneActor=%s"),
+            Zone ? *Zone->GetName() : TEXT("None"));
+    }
 }
+
 
 void APlayerCharacter::ApplyHumanAsDefaultMesh()
 {
-    // NOTE: Use your actual Human race key / default key.
     const ERaceType HumanType = ERaceType::Human;
+
+    UE_LOG(LogTemp, Warning, TEXT("[Race] Try ApplyHumanAsDefaultMesh. CurrentRaceType=%d"),
+        static_cast<int32>(CurrentRaceType));
 
     const bool bOk = TransformToRace(HumanType);
     UE_LOG(LogTemp, Warning, TEXT("[Race] ApplyHumanAsDefaultMesh => %s"), bOk ? TEXT("true") : TEXT("false"));
 }
-
 
 FString APlayerCharacter::GetCombatInteractionName(ECombatInteractionType Type)
 {
