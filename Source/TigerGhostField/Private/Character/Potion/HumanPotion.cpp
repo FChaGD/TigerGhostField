@@ -24,12 +24,8 @@ void UHumanPotion::Execute()
 	
 	Debug::Print(TEXT("HumanPotion Execute"));
 	
-	// Core Stat
-	OwnerCharacter->SetHp(
-		ComputeFinalRecovery(
-			OwnerCharacter->GetMaxHp(), 
-			ComputeResourceRecoveryPct(OwnerCharacter->GetMentalityPercent())
-				));
+	// Core Stat restore
+	OwnerCharacter->SetHp(ComputeFinalRecovery(OwnerCharacter->GetMaxHp(), ComputeResourceRecoveryPct(OwnerCharacter->GetMentalityPercent())));
 	
 	Debug::Print(TEXT("Human Potion Complete"));
 }

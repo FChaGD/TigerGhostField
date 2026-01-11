@@ -22,7 +22,7 @@ void UWraithPotion::Execute()
 	}
 	Debug::Print(TEXT("WraithPotion Execute"));
 	
-	// Core Stat
+	// Core Stat restore
 	OwnerCharacter->SetMentality(ComputeFinalRecovery(OwnerCharacter->GetMaxMentality(), ComputeResourceRecoveryPct(OwnerCharacter->GetMentalityPercent())));
 	
 	Debug::Print(TEXT("Warith Potion Complete"));

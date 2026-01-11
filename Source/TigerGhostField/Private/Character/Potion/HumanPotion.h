@@ -16,5 +16,6 @@ class UHumanPotion : public UPotionBase
 	
 public:
 	UHumanPotion();
+	
 	virtual void Execute() override;
 };

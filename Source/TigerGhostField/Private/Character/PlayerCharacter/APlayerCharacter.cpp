@@ -10,6 +10,7 @@
 #include "Component/Factory/AttackFactory.h"
 #include "Character/Attack/AttackBase.h"
 #include "Character/Potion/PotionBase.h"
+#include "Component/Factory/PotionFactory.h"
 
 void APlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
@@ -88,7 +89,7 @@ void APlayerCharacter::Input_Potion(const FInputActionValue& InputActionValue)
         CurrentPotion->Execute();
     }
     else {
-        UE_LOG(LogTemp, Warning, TEXT("NO Heavy Attack"));
+        UE_LOG(LogTemp, Warning, TEXT("NO Potion"));
     }
 }
 
@@ -155,6 +156,24 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         ETriggerEvent::Started,
         this,
         &ThisClass::Input_Potion);
+}
+
+void APlayerCharacter::BeginPlay()
+{
+    Super::BeginPlay();
+    
+    // Attack Create Factory
+    AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
+    CurrentLightAttack = AttackFactory->CreateLightAttack(0);
+    CurrentLightAttack->Initialize(this);
+    
+    CurrentHeavyAttack = AttackFactory->CreateHeavyAttack(0);
+    CurrentHeavyAttack->Initialize(this);
+    
+    // Potion Create Factory
+    PotionFactory = NewObject<UPotionFactory>(this, PotionFactoryClass);
+    CurrentPotion = PotionFactory->CreatePotion(0);
+    CurrentPotion->Initialize(this,0, EPotionState::Ready);
 }
 
 void APlayerCharacter::CalculateDamage(const FAttackParams& attackParam)

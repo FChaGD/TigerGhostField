@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable, BlueprintType)
 class ULightAttack : public UAttackBase
 {
 	GENERATED_BODY()

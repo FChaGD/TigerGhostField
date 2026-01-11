@@ -34,6 +34,10 @@ float UPotionBase::ComputeFinalRecovery(float coreMax, float resourceRecoveryPct
 
 void UPotionBase::Execute()
 {
+	// switch (OwnerCharacter->Race)
+	// {
+	// 	
+	// }
 }
 
 void UPotionBase::RefillPotion()
@@ -46,7 +50,7 @@ void UPotionBase::RefillPotion()
 	if (CurrentCount >= MaxCountByLevel[UpgradeLevel])
 	{
 		OwnerCharacter->GetWorldTimerManager().ClearTimer(PotionRefillTimerHandle);	
-	Debug::Print(TEXT("Refill Complete"));
+		Debug::Print(TEXT("Refill Complete"));
 	}
 	
 	Debug::Print(TEXT("PotionRefill + 1"));
@@ -66,6 +70,6 @@ void UPotionBase::StartPotionRefill()
 		PotionRefillTimerHandle,
 		this, 
 		&ThisClass::RefillPotion,
-		5.f,
+		5.f,	// temp period
 		true);
 }

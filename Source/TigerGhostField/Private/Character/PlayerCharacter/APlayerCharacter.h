@@ -35,6 +35,8 @@ public:
 protected:
 	// Input binding
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	virtual void BeginPlay() override;
 
 private:
 	// Indicates the character's baseline defensive state when no specific input is provided.

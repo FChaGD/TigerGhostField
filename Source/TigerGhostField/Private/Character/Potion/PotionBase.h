@@ -28,13 +28,16 @@ private:
 public:
 	UPotionBase();
 	
+	UFUNCTION(BlueprintCallable, Category="Potion")
 	void Initialize(ABaseCharacter* InOwnerCharacter, uint8 Level, EPotionState PotionState);
 	
 	// mindPercentile: 0~100 (percentage)
+	UFUNCTION(BlueprintCallable, Category="Potion")
 	float ComputeResourceRecoveryPct(float mindPercentile);
 
-	// coreMax: (MaxHP etc)
+	// coreMax: (MaxHP, Mentality, Stamina)
 	// resourceRecoveryPct:
+	UFUNCTION(BlueprintCallable, Category="Potion")
 	float ComputeFinalRecovery(float coreMax, float resourceRecoveryPct);
 	
 	
@@ -60,7 +63,8 @@ protected:
 	UPROPERTY()
 	FTimerHandle PotionRefillTimerHandle;
 	
-	bool bBossRefill;
+	UPROPERTY()
+	float BossRefillPercent = 0.0f;
 
 public:
 	

@@ -65,12 +65,17 @@ public:
 	void AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger);
 	void ConsumeStat(uint8 Type, float Amount);
 	float GetMentalityPercent() const;
+	float GetMaxHp() const;
 	float GetMaxMentality() const;
 	float GetMaxStamina() const;
-	float GetMaxHp() const;
+	float GetHp() const;
+	float GetMentality() const;
+	float GetStamina() const;
 	void SetHp(float InHp);
 	void SetMentality(float InMentality);
 	void SetStamina(float InStamina);
+	float GetAttackPower() const;
+	
 private:
 	void NotifyStatChanged(FName StatName);
 
@@ -88,7 +93,7 @@ private:
 	float SpiritualAttackCoefficient = 100.f;
 	void SetSpirituallSpiritualAttackCoefficient();
 	//--------------------------------
-	float AttackPower = 100.f;
+	float AttackPower = 10.f;
 
 	//--------------------------------
 	bool bIsDead = false;
@@ -99,22 +104,25 @@ private:
 
 protected:
 	// Current Light Attack Object
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	ULightAttack* CurrentLightAttack;
 	
 	// Current Heavy Attack Object
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	UHeavyAttack* CurrentHeavyAttack;
 	
 	// Current Potion Object
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	UPotionBase* CurrentPotion;
 
 public:
 	/** Constructor that sets default values for the character's properties. */
 	ABaseCharacter();
 	
+	// Temp attack damage apply
+	void BoxTrace(UAttackBase* AttackType);
 	
+	void ApplyDamage(float Damage);
 
 protected:
 	/** Called when the game starts or when spawned. */

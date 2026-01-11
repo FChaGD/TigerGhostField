@@ -16,5 +16,6 @@ class UWraithPotion : public UPotionBase
 	
 public:
 	UWraithPotion();
+	
 	virtual void Execute() override;
 };

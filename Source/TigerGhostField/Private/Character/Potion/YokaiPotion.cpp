@@ -23,7 +23,7 @@ void UYokaiPotion::Execute()
 	
 	Debug::Print(TEXT("YokaiPotion Execute"));
 	
-	// Core Stat
+	// Core Stat restore
 	OwnerCharacter->SetStamina(ComputeFinalRecovery(OwnerCharacter->GetMaxStamina(), ComputeResourceRecoveryPct(OwnerCharacter->GetMentalityPercent())));
 	
 	Debug::Print(TEXT("Yokai Potion Complete"));

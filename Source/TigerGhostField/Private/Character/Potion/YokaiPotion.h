@@ -16,5 +16,6 @@ class UYokaiPotion : public UPotionBase
 	
 public:
 	UYokaiPotion();
+	
 	virtual void Execute() override; 
 };

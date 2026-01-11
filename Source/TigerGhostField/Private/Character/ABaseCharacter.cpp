@@ -5,6 +5,7 @@
 #include "Character/Attack/AttackBase.h"
 #include "Component/Factory/AttackFactory.h"
 #include "Component/Factory/PotionFactory.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "Potion/PotionBase.h"
 
 ABaseCharacter::ABaseCharacter()
@@ -13,19 +14,72 @@ ABaseCharacter::ABaseCharacter()
 
 }
 
+void ABaseCharacter::BoxTrace(UAttackBase* AttackType)
+{
+    Debug::Print(TEXT("Attack Box Trace"));
+    
+    TArray<FHitResult> HitResults;
+    
+    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn)); // 캐릭터만 맞추고 싶으면 Pawn
+
+    // 5) Ignore Actors
+    TArray<AActor*> ActorsToIgnore;
+    ActorsToIgnore.Add(this);
+    
+    UKismetSystemLibrary::BoxTraceMultiForObjects(
+        GetWorld(),                    // WorldContext
+        GetActorLocation(),                         // Start (FVector)
+        GetActorLocation() + GetActorForwardVector()*200.f,                           // End (FVector)
+        FVector(30.f, 50.f, 60.f),                      // Half Size (FVector)
+        GetActorForwardVector().Rotation(),                   // Orientation (FRotator)
+        ObjectTypes,                   // Object Types (TArray<TEnumAsByte<EObjectTypeQuery>>)
+        false,                         // Trace Complex
+        ActorsToIgnore,                // Actors to Ignore
+        EDrawDebugTrace::Persistent,         // Debug Draw
+        HitResults,                       // Out Hits
+        true                           // Ignore Self
+    );
+    
+    TSet<AActor*> UniqueActors;
+    for (const FHitResult &HitResult : HitResults)
+    {
+        AActor* temp = HitResult.GetActor();
+        if (!temp) continue;
+        if (UniqueActors.Contains(temp)) continue;
+        UniqueActors.Add(temp);
+        ABaseCharacter* TargetCharacter = Cast<ABaseCharacter>(temp);
+        
+        float SetAmount = AttackPower * (AttackType && AttackType->IsA(UHeavyAttack::StaticClass()) ? 1.5 : 0.8);
+        
+        if (!TargetCharacter)
+            continue;
+        else
+        {
+            // switch (TargetCharacter->GetCharacterRace())
+            // {
+            // case Race::human :
+            //     TargetCharacter->SetHp(-1*SetAmount);
+            //     Debug::Print(TEXT("Human Apply Damage"));
+            //     break;
+            // case Race::wraith :
+            //     TargetCharacter->SetMentality(-1*SetAmount);
+            //     Debug::Print(TEXT("Wraith Apply Damage"));
+            //     break;
+            // case Race::yokai:
+            //     TargetCharacter->SetStamina(-1*SetAmount);
+            //     Debug::Print(TEXT("Yokai Apply Damage"));
+            //     break;
+            // }
+        }
+    }
+    
+}
+
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-    // Attack Create Factory
-    AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
-    CurrentLightAttack = AttackFactory->CreateLightAttack(0);
-    CurrentHeavyAttack = AttackFactory->CreateHeavyAttack(0);
     
-    // Potion Create Factory
-    PotionFactory = NewObject<UPotionFactory>(this, PotionFactoryClass);
-    CurrentPotion = PotionFactory->CreatePotion(0);
-    CurrentPotion->Initialize(this,0, EPotionState::Ready);
 	//ToDo : StateReset
 }
 
@@ -130,6 +184,19 @@ float ABaseCharacter::GetMaxStamina() const
     return MaxStamina;
 }
 
+float ABaseCharacter::GetHp() const
+{return Hp;
+}
+
+float ABaseCharacter::GetMentality() const
+{return Mentality;
+}
+
+float ABaseCharacter::GetStamina() const
+{
+    return Stamina;
+}
+
 float ABaseCharacter::GetMaxHp() const
 {
     return MaxHp;
@@ -154,6 +221,11 @@ void ABaseCharacter::SetStamina(float InStamina)
     Stamina = FMath::Clamp(Stamina+InStamina, 0, MaxStamina);
     
     Debug::Print(TEXT("Stamina Set : %f"), Stamina);
+}
+
+float ABaseCharacter::GetAttackPower() const
+{
+    return AttackPower;
 }
 
 void ABaseCharacter::NotifyStatChanged(FName StatName)
