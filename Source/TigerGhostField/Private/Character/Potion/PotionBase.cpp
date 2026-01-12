@@ -49,7 +49,8 @@ void UPotionBase::RefillPotion()
 	// Max Count, End Refill
 	if (CurrentCount >= MaxCountByLevel[UpgradeLevel])
 	{
-		OwnerCharacter->GetWorldTimerManager().ClearTimer(PotionRefillTimerHandle);	
+		OwnerCharacter->GetWorldTimerManager().ClearTimer(PotionRefillTimerHandle);
+		CurrentState = EPotionState::Ready;
 		Debug::Print(TEXT("Refill Complete"));
 	}
 	
