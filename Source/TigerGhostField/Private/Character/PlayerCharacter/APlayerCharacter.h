@@ -43,9 +43,6 @@ private:
     UFUNCTION(BlueprintCallable, Category = "Combat")
     virtual void CalculateDamage(const FAttackParams& attackParam) override;
 
-protected:
-    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 private:
     ECombatInteractionType DefaultDeffenceType;
     ECombatInteractionType CurrentDeffenceType;
