@@ -4,9 +4,14 @@
 // NOTE: Race related behavior is added (minimal mesh swap only).
 
 #include "Character/ABaseCharacter.h"
+
+#include "DebugHelper.h"
 #include "Math/UnrealMathUtility.h"
 #include "Character/Attack/AttackBase.h"
 #include "Component/Factory/AttackFactory.h"
+#include "Component/Factory/PotionFactory.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Potion/PotionBase.h"
 
 // NOTE: Race form data asset
 #include "Character/PlayerCharacter/PlayerData/UDA_RaceForm.h"
@@ -18,12 +23,78 @@ ABaseCharacter::ABaseCharacter()
     ZoneAffect = CreateDefaultSubobject<UZoneAffectComponent>(TEXT("ZoneAffect"));
 }
 
+void ABaseCharacter::BoxTrace(UAttackBase* AttackType)
+{
+    Debug::Print(TEXT("Attack Box Trace"));
+
+    TArray<FHitResult> HitResults;
+
+    TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn)); // 캐릭터만 맞추고 싶으면 Pawn
+
+    // 5) Ignore Actors
+    TArray<AActor*> ActorsToIgnore;
+    ActorsToIgnore.Add(this);
+
+    UKismetSystemLibrary::BoxTraceMultiForObjects(
+        GetWorld(),                                    // WorldContext
+        GetActorLocation(),                             // Start (FVector)
+        GetActorLocation() + GetActorForwardVector() * 200.f, // End (FVector)
+        FVector(30.f, 50.f, 60.f),                      // Half Size (FVector)
+        GetActorForwardVector().Rotation(),             // Orientation (FRotator)
+        ObjectTypes,                                    // Object Types
+        false,                                          // Trace Complex
+        ActorsToIgnore,                                 // Actors to Ignore
+        EDrawDebugTrace::Persistent,                    // Debug Draw
+        HitResults,                                     // Out Hits
+        true                                            // Ignore Self
+    );
+
+    TSet<AActor*> UniqueActors;
+    for (const FHitResult& HitResult : HitResults)
+    {
+        AActor* temp = HitResult.GetActor();
+        if (!temp) continue;
+        if (UniqueActors.Contains(temp)) continue;
+        UniqueActors.Add(temp);
+
+        ABaseCharacter* TargetCharacter = Cast<ABaseCharacter>(temp);
+
+        float SetAmount = AttackPower * (AttackType && AttackType->IsA(UHeavyAttack::StaticClass()) ? 1.5 : 0.8);
+
+        if (!TargetCharacter)
+            continue;
+        else
+        {
+            // switch (TargetCharacter->GetCharacterRace())
+            // {
+            // case Race::human :
+            //     TargetCharacter->SetHp(-1*SetAmount);
+            //     Debug::Print(TEXT("Human Apply Damage"));
+            //     break;
+            // case Race::wraith :
+            //     TargetCharacter->SetMentality(-1*SetAmount);
+            //     Debug::Print(TEXT("Wraith Apply Damage"));
+            //     break;
+            // case Race::yokai:
+            //     TargetCharacter->SetStamina(-1*SetAmount);
+            //     Debug::Print(TEXT("Yokai Apply Damage"));
+            //     break;
+            // }
+        }
+    }
+}
+
 void ABaseCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
+    // English comment: Keep factory initialization (was present in HEAD).
+    // English comment: This is safe even if class is not set; NewObject will return nullptr.
     AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
-    //ToDo : StateReset
+
+    // English comment: TODO - StateReset
+    // ToDo : StateReset
 
     // NOTE: Apply default race if data exists. If not, keep original mesh as-is.
     TransformToRace(DefaultRaceType);
@@ -112,6 +183,67 @@ void ABaseCharacter::ConsumeStat(uint8 Type, float Amount)
     SetMentalityState();
     SetRecoveryCoefficient();
     SetDamageReceivedCoefficient();
+}
+
+float ABaseCharacter::GetMentalityPercent() const
+{
+    return Mentality / MaxMentality;
+}
+
+float ABaseCharacter::GetMaxMentality() const
+{
+    return MaxMentality;
+}
+
+float ABaseCharacter::GetMaxStamina() const
+{
+    return MaxStamina;
+}
+
+float ABaseCharacter::GetHp() const
+{
+    return Hp;
+}
+
+float ABaseCharacter::GetMentality() const
+{
+    return Mentality;
+}
+
+float ABaseCharacter::GetStamina() const
+{
+    return Stamina;
+}
+
+float ABaseCharacter::GetMaxHp() const
+{
+    return MaxHp;
+}
+
+void ABaseCharacter::SetHp(float InHp)
+{
+    Hp = FMath::Clamp(Hp + InHp, 0, MaxHp);
+
+    Debug::Print(TEXT("Hp Set : %f"), Hp);
+}
+
+void ABaseCharacter::SetMentality(float InMentality)
+{
+    Mentality = FMath::Clamp(Mentality + InMentality, 0, MaxMentality);
+
+    Debug::Print(TEXT("Mentality Set : %f"), Mentality);
+}
+
+void ABaseCharacter::SetStamina(float InStamina)
+{
+    Stamina = FMath::Clamp(Stamina + InStamina, 0, MaxStamina);
+
+    Debug::Print(TEXT("Stamina Set : %f"), Stamina);
+}
+
+float ABaseCharacter::GetAttackPower() const
+{
+    return AttackPower;
 }
 
 void ABaseCharacter::NotifyStatChanged(FName StatName)

@@ -18,8 +18,11 @@
 
 // Forward declarations
 struct FAttackClassSet;
+
 class UAttackBase;
 class UAttackFactory;
+class UPotionBase;
+class UPotionFactory;
 class UDA_RaceForm;
 
 // Mentality state definition
@@ -78,11 +81,27 @@ private:
     EMentalityState MentalityState = EMentalityState::Normal;
 
 public:
-    // Registers a stat trigger observer
+    // English comment: Registers a stat trigger observer.
     void AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger);
 
-    // Consumes a stat by type and amount
+    // English comment: Consumes a stat by type and amount.
     void ConsumeStat(uint8 Type, float Amount);
+
+    // English comment: Stat getters/setters (kept for existing cpp usage).
+    float GetMentalityPercent() const;
+    float GetMaxMentality() const;
+    float GetMaxStamina() const;
+    float GetMaxHp() const;
+
+    float GetHp() const;
+    float GetMentality() const;
+    float GetStamina() const;
+
+    void SetHp(float InHp);
+    void SetMentality(float InMentality);
+    void SetStamina(float InStamina);
+
+    float GetAttackPower() const;
 
 private:
     // Notifies observers that a stat value has changed
@@ -113,7 +132,7 @@ private:
     void SetSpirituallSpiritualAttackCoefficient();
 
     // ------------------------------
-    // Base attack power
+    // Base attack power (HEAD priority)
     float AttackPower = 100.f;
 
     // ------------------------------
@@ -128,20 +147,11 @@ private:
     TArray<TScriptInterface<ITriggerObserver>> StatTriggers;
 
 protected:
-    // Currently executing attack instance
-    UPROPERTY(Transient)
-    UAttackBase* CurrentAttack = nullptr;
-
-public:
-    // Constructor that sets default values for the character's properties
-    ABaseCharacter();
-
-protected:
     // Zone affect component reference
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Zone")
     TObjectPtr<UZoneAffectComponent> ZoneAffect = nullptr;
 
-    // Returns the current zone type affecting this character
+    // English comment: Returns the current zone type affecting this character.
     UFUNCTION(BlueprintCallable, Category = "Zone")
     EZoneType GetZoneType() const
     {
@@ -152,12 +162,44 @@ protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
-    // Attack factory class reference
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+protected:
+    // ------------------------------
+    // Attack / Potion (BaseAttack priority)
+
+    // AttackFactory Class
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
     TSubclassOf<UAttackFactory> AttackFactoryClass;
 
-    // Attack factory instance
+    // Attack Create Factory
+    UPROPERTY()
     UAttackFactory* AttackFactory = nullptr;
+
+    // PotionFactory Class
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
+    TSubclassOf<UPotionFactory> PotionFactoryClass;
+
+    // Potion Create Factory
+    UPROPERTY()
+    UPotionFactory* PotionFactory = nullptr;
+
+    // Current Light Attack Object
+    UPROPERTY()
+    ULightAttack* CurrentLightAttack = nullptr;
+
+    // Current Heavy Attack Object
+    UPROPERTY()
+    UHeavyAttack* CurrentHeavyAttack = nullptr;
+
+    // Current Potion Object
+    UPROPERTY()
+    UPotionBase* CurrentPotion = nullptr;
+
+public:
+    /** Constructor that sets default values for the character's properties. */
+    ABaseCharacter();
+
+    // English comment: Temp attack damage apply (exists in your cpp).
+    void BoxTrace(UAttackBase* AttackType);
 
 public:
     // Calculates effective damage of an incoming attack based on defense state
@@ -184,7 +226,7 @@ protected:
 
     // Applies the minimum stable subset of a race form (mesh only for now)
     void ApplyRaceFormMinimal(const UDA_RaceForm* Form);
-    
+
     UPROPERTY(VisibleInstanceOnly, Category = "Race")
     bool bHasAppliedRaceForm = false;
 #pragma endregion

@@ -14,6 +14,11 @@
 #include "Component/Input/PlayerEnhancedInputComponent.h"
 #include "Component/Factory/AttackFactory.h"
 #include "Character/Attack/AttackBase.h"
+#include "Character/Potion/PotionBase.h"
+#include "Component/Factory/PotionFactory.h"
+
+// English comment: Needed for zone actor logging in BeginPlay.
+#include "TypeZone/ZoneVolumeActor.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -66,39 +71,26 @@ void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionVal
 {
     UE_LOG(LogTemp, Warning, TEXT("Light Attack"));
 
-    if (!AttackFactory)
+    if (!CurrentLightAttack)
     {
-        UE_LOG(LogTemp, Warning, TEXT("AttackFactory is null"));
+        UE_LOG(LogTemp, Warning, TEXT("CurrentLightAttack is null"));
         return;
     }
 
-    CurrentAttack = AttackFactory->CreateAttack(EAttackInput::Light, 0);
-    if (CurrentAttack)
-    {
-        CurrentAttack->Execute();
-    }
+    CurrentLightAttack->Execute();
 }
-
 
 void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
 {
     UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
 
-    if (!AttackFactory)
+    if (!CurrentHeavyAttack)
     {
-        UE_LOG(LogTemp, Warning, TEXT("AttackFactory is null"));
+        UE_LOG(LogTemp, Warning, TEXT("CurrentHeavyAttack is null"));
         return;
     }
 
-    CurrentAttack = AttackFactory->CreateAttack(EAttackInput::Heavy, 0);
-    if (CurrentAttack)
-    {
-        CurrentAttack->Execute();
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("NO Heavy Attack"));
-    }
+    CurrentHeavyAttack->Execute();
 }
 
 void APlayerCharacter::Input_RaceTransform(const FInputActionValue& InputActionValue)
@@ -131,6 +123,20 @@ void APlayerCharacter::Input_RaceTransform(const FInputActionValue& InputActionV
 
     const bool bOk = TransformToRace(TargetRaceType);
     UE_LOG(LogTemp, Warning, TEXT("TransformToRace => %s"), bOk ? TEXT("true") : TEXT("false"));
+}
+
+void APlayerCharacter::Input_Potion(const FInputActionValue& InputActionValue)
+{
+    UE_LOG(LogTemp, Warning, TEXT("Input Potion"));
+
+    if (CurrentPotion)
+    {
+        CurrentPotion->Execute();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("NO Potion"));
+    }
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -223,6 +229,15 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
             this,
             &ThisClass::Input_RaceTransform);
     }
+
+    if (InputDataAsset->PotionInputAction)
+    {
+        PlayerInput->BindInputAction(
+            InputDataAsset->PotionInputAction,
+            ETriggerEvent::Started,
+            this,
+            &ThisClass::Input_Potion);
+    }
 }
 
 void APlayerCharacter::BeginPlay()
@@ -243,8 +258,63 @@ void APlayerCharacter::BeginPlay()
         UE_LOG(LogTemp, Warning, TEXT("[Player] Initial ZoneActor=%s"),
             Zone ? *Zone->GetName() : TEXT("None"));
     }
-}
 
+    // English comment: Attack factory setup (BaseAttack style).
+    if (!AttackFactoryClass)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AttackFactoryClass is null"));
+    }
+    AttackFactory = AttackFactoryClass ? NewObject<UAttackFactory>(this, AttackFactoryClass) : nullptr;
+    if (!AttackFactory)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("AttackFactory create failed"));
+    }
+    else
+    {
+        CurrentLightAttack = AttackFactory->CreateLightAttack(0);
+        if (CurrentLightAttack)
+        {
+            CurrentLightAttack->Initialize(this);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("CreateLightAttack returned null"));
+        }
+
+        CurrentHeavyAttack = AttackFactory->CreateHeavyAttack(0);
+        if (CurrentHeavyAttack)
+        {
+            CurrentHeavyAttack->Initialize(this);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("CreateHeavyAttack returned null"));
+        }
+    }
+
+    // English comment: Potion factory setup (BaseAttack style).
+    if (!PotionFactoryClass)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PotionFactoryClass is null"));
+    }
+    PotionFactory = PotionFactoryClass ? NewObject<UPotionFactory>(this, PotionFactoryClass) : nullptr;
+    if (!PotionFactory)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PotionFactory create failed"));
+    }
+    else
+    {
+        CurrentPotion = PotionFactory->CreatePotion(0);
+        if (CurrentPotion)
+        {
+            CurrentPotion->Initialize(this, 0, EPotionState::Ready);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("CreatePotion returned null"));
+        }
+    }
+}
 
 void APlayerCharacter::ApplyHumanAsDefaultMesh()
 {

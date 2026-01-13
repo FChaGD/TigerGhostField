@@ -30,7 +30,9 @@ public:
 
 
 protected:
-    virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+	virtual void BeginPlay() override;
 
 private:
     void ApplyHumanAsDefaultMesh();
@@ -72,12 +74,17 @@ private:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
     UDA_InputDataAsset* InputDataAsset;
 
-    void Input_Move(const FInputActionValue& InputActionValue);
-    void Input_Look(const FInputActionValue& InputActionValue);
-    void Input_RunTrigger(const FInputActionValue& InputActionValue);
-    void Input_RunComplete(const FInputActionValue& InputActionValue);
-    void Input_LightAttack(const FInputActionValue& InputActionValue);
-    void Input_HeavyAttack(const FInputActionValue& InputActionValue);
+	void Input_Move(const FInputActionValue& InputActionValue);
+	void Input_Look(const FInputActionValue& InputActionValue);
+
+	void Input_RunTrigger(const FInputActionValue& InputActionValue);
+	void Input_RunComplete(const FInputActionValue& InputActionValue);
+
+	void Input_LightAttack(const FInputActionValue& InputActionValue);
+	void Input_HeavyAttack(const FInputActionValue& InputActionValue);
+	
     void Input_RaceTransform(const FInputActionValue& InputActionValue);
+
+	void Input_Potion(const FInputActionValue& InputActionValue);
 #pragma endregion
 };

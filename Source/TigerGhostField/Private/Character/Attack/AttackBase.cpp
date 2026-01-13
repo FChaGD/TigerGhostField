@@ -11,6 +11,16 @@ UAttackBase::~UAttackBase()
 {
 }
 
+void UAttackBase::Initialize(ABaseCharacter* InOwnerCharacter)
+{
+	OwnerCharacter = InOwnerCharacter;
+}
+
 void UAttackBase::Execute()
 {
+}
+
+ABaseCharacter* UAttackBase::GetOwnerCharacter() const
+{
+	return OwnerCharacter;
 }

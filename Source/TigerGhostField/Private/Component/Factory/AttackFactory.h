@@ -19,10 +19,12 @@ class UAttackFactory : public UObject
 	GENERATED_BODY()
 
 protected:
-	// °ø°İ Å¬·¡½º ¼¼Æ® (ÆÑÅä¸® ÀÔ·Â)
+	// Attack Class ëª©ë¡ë“¤
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	FAttackClassSet AttackClassSet;
 
 public:
-	UAttackBase* CreateAttack(EAttackInput Ininput, int test);
+	ULightAttack* CreateLightAttack(int test);
+	
+	UHeavyAttack* CreateHeavyAttack(int test);
 };
