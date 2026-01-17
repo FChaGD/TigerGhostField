@@ -13,9 +13,10 @@
 #include "DataAssets/DA_InputDataAsset.h"
 #include "Component/Input/PlayerEnhancedInputComponent.h"
 #include "Component/Factory/AttackFactory.h"
+#include "Component/Factory/PotionFactory.h"
+#include "Component/UI/PlayerUIComponent.h"
 #include "Character/Attack/AttackBase.h"
 #include "Character/Potion/PotionBase.h"
-#include "Component/Factory/PotionFactory.h"
 
 // English comment: Needed for zone actor logging in BeginPlay.
 #include "TypeZone/ZoneVolumeActor.h"
@@ -24,8 +25,19 @@ APlayerCharacter::APlayerCharacter()
 {
 }
 
+UPawnUIComponent* APlayerCharacter::GetPawnUIComponent() const
+{
+    return PlayerUIComponent;
+}
+
+UPlayerUIComponent* APlayerCharacter::GetPlayerUIComponent()
+{
+    return PlayerUIComponent;
+}
+
 void APlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
+    if (IsDead()) return;
     const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
     const FRotator MovementRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 

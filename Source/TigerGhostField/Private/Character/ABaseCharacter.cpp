@@ -130,6 +130,11 @@ void ABaseCharacter::SetPhysicalAttackCoefficient()
     PhysicalAttackCoefficient = FMath::Clamp(0.75f * StaminaPercent + 65.f, 80.f, 140.f);
 }
 
+UPawnUIComponent* ABaseCharacter::GetPawnUIComponent() const
+{
+    return nullptr;
+}
+
 void ABaseCharacter::AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger)
 {
     if (!Trigger)

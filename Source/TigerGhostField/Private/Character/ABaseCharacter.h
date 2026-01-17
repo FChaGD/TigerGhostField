@@ -8,6 +8,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Character/ICharacterInterface.h"
+#include "Interface/PawnUIInterface.h"
 #include "Utill/ITriggerObserver.h"
 #include "TypeZone/ZoneAffectComponent.h"
 #include "Character/Attack/AttackTypes.h"
@@ -35,7 +36,7 @@ enum class EMentalityState : uint8
 };
 
 UCLASS()
-class ABaseCharacter : public ACharacter, public ICharacterInterface
+class ABaseCharacter : public ACharacter, public ICharacterInterface, public IPawnUIInterface
 {
     GENERATED_BODY()
 
@@ -81,6 +82,10 @@ private:
     EMentalityState MentalityState = EMentalityState::Normal;
 
 public:
+    //~Begin IPawnUIInterface Interface
+	virtual UPawnUIComponent* GetPawnUIComponent() const override;
+    //~End IPawnUIInterface Interface
+    
     // English comment: Registers a stat trigger observer.
     void AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger);
 
@@ -102,6 +107,8 @@ public:
     void SetStamina(float InStamina);
 
     float GetAttackPower() const;
+    
+    bool IsDead() const                                     { return bIsDead; };
 
 private:
     // Notifies observers that a stat value has changed

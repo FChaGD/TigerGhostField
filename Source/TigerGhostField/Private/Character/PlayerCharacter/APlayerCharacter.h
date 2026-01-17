@@ -12,6 +12,7 @@
 #include "Character/ABaseCharacter.h"
 #include "Containers/Queue.h"
 #include "PlayerData/RaceTypes.h"
+
 #include "APlayerCharacter.generated.h"
 
 // Forward declarations
@@ -19,6 +20,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UDA_InputDataAsset;
 struct FInputActionValue;
+class UPlayerUIComponent;
 
 UCLASS()
 class TIGERGHOSTFIELD_API APlayerCharacter : public ABaseCharacter
@@ -27,6 +29,11 @@ class TIGERGHOSTFIELD_API APlayerCharacter : public ABaseCharacter
 
 public:
     APlayerCharacter();
+	
+	//~Begin IPawnUIInterface Interface
+	virtual UPawnUIComponent* GetPawnUIComponent() const override;
+	virtual UPlayerUIComponent* GetPlayerUIComponent() override;
+	//~End IPawnUIInterface Interface
 
 
 protected:
@@ -83,5 +90,10 @@ private:
     void Input_RaceTransform(const FInputActionValue& InputActionValue);
 
 	void Input_Potion(const FInputActionValue& InputActionValue);
+#pragma endregion
+	
+#pragma region Components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="UI", meta = (AllowPrivateAccess = "true"))
+	UPlayerUIComponent* PlayerUIComponent;
 #pragma endregion
 };

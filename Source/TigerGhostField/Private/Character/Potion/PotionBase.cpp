@@ -1,5 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Author: ju wonung
 
 #include "Character/Potion/PotionBase.h"
 #include "Character/ABaseCharacter.h"
@@ -34,10 +33,6 @@ float UPotionBase::ComputeFinalRecovery(float coreMax, float resourceRecoveryPct
 
 void UPotionBase::Execute()
 {
-	// switch (OwnerCharacter->Race)
-	// {
-	// 	
-	// }
 }
 
 void UPotionBase::RefillPotion()

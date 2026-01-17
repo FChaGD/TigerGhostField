@@ -1,6 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
+// Author: ju wonung
 #include "Component/Factory/AttackFactory.h"
 #include "Character/Attack/AttackTypes.h"
 
