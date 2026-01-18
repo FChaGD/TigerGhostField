@@ -1,6 +1,9 @@
 # Visual Studio 2015 user specific files
 .vs/
 
+# DSstore
+.DS_Store
+
 # Configure setting
 Config/**
 
