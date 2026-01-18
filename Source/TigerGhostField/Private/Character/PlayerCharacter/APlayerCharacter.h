@@ -42,6 +42,23 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+#pragma region Inputs
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
+	UDA_InputDataAsset* InputDataAsset;
+
+	void Input_Move(const FInputActionValue& InputActionValue);
+	void Input_Look(const FInputActionValue& InputActionValue);
+
+	void Input_RunTrigger(const FInputActionValue& InputActionValue);
+	void Input_RunComplete(const FInputActionValue& InputActionValue);
+
+	void Input_LightAttack(const FInputActionValue& InputActionValue);
+	void Input_HeavyAttack(const FInputActionValue& InputActionValue);
+	
+	void Input_RaceTransform(const FInputActionValue& InputActionValue);
+
+	void Input_Potion(const FInputActionValue& InputActionValue);
+#pragma endregion
     void ApplyHumanAsDefaultMesh();
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -50,7 +67,6 @@ private:
     UFUNCTION(BlueprintCallable, Category = "Combat")
     virtual void CalculateDamage(const FAttackParams& attackParam) override;
 
-private:
     ECombatInteractionType DefaultDeffenceType;
     ECombatInteractionType CurrentDeffenceType;
     ECombatInteractionType InputDeffenceType;
@@ -74,26 +90,14 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
     UCameraComponent* FollowCamera;
 
-#pragma region Inputs
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CharacterData", meta = (AllowPrivateAccess = "true"))
-    UDA_InputDataAsset* InputDataAsset;
-
-	void Input_Move(const FInputActionValue& InputActionValue);
-	void Input_Look(const FInputActionValue& InputActionValue);
-
-	void Input_RunTrigger(const FInputActionValue& InputActionValue);
-	void Input_RunComplete(const FInputActionValue& InputActionValue);
-
-	void Input_LightAttack(const FInputActionValue& InputActionValue);
-	void Input_HeavyAttack(const FInputActionValue& InputActionValue);
-	
-    void Input_RaceTransform(const FInputActionValue& InputActionValue);
-
-	void Input_Potion(const FInputActionValue& InputActionValue);
-#pragma endregion
-	
+	protected:
 #pragma region Components
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="UI", meta = (AllowPrivateAccess = "true"))
 	UPlayerUIComponent* PlayerUIComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="UI")
+	UWidgetComponent* HealthWidgetComponent;
 #pragma endregion
+	
+
 };

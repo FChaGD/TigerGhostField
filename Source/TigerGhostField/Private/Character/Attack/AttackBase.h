@@ -7,6 +7,7 @@
 
 #include "AttackBase.generated.h"
 
+class UDA_AttackData;
 class ABaseCharacter;
 /**
  * 
@@ -29,6 +30,8 @@ protected:
 	bool bIsRepeat;
 	int combo;
 	ABaseCharacter* OwnerCharacter;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UDA_AttackData* DataAsset;
 	
 public:
 	

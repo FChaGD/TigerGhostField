@@ -3,6 +3,8 @@
 
 #include "Character/Attack/AttackBase.h"
 
+#include "DebugHelper.h"
+
 UAttackBase::UAttackBase()
 {
 }

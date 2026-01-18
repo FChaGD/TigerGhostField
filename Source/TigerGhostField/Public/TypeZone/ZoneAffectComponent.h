@@ -44,6 +44,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<AZoneVolumeActor> CurrentZone = nullptr;
 
+	// Current Attribute Type
 	UPROPERTY()
 	EZoneType CurrentType = EZoneType::None;
 

@@ -22,7 +22,7 @@ protected:
 
 	// UI Component Input, Widget Bind UI Component Function
 	UFUNCTION(BlueprintImplementableEvent,meta = (DisplayName = "On Owning Hero UI Component Initialized"))
-	void BP_OnOwningHeroUIComponentInitialized(UPlayerUIComponent* OwningHeroUIComponent);
+	void BP_OnOwningPlayerUIComponentInitialized(UPlayerUIComponent* OwningHeroUIComponent);
 	
 	UFUNCTION(BlueprintImplementableEvent,meta = (DisplayName = "On Owning Enemy UI Component Initialized"))
 	void BP_OnOwningEnemyUIComponentInitialized(UEnemyUIComponent* OwningEnemyUIComponent);
@@ -30,4 +30,7 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void InitEnemyCreatedWidget(AActor* OwningEnemyActor);
+	
+	UFUNCTION(BlueprintCallable)
+	void InitPlayerCreatedWidget(AActor* OwningPlayerActor);
 };
