@@ -15,6 +15,7 @@
 
 // NOTE: Race form data asset
 #include "Character/PlayerCharacter/PlayerData/UDA_RaceForm.h"
+#include "Component/UI/PawnUIComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
 ABaseCharacter::ABaseCharacter()
@@ -69,7 +70,10 @@ void ABaseCharacter::BoxTrace(UAttackBase* AttackType)
             // switch (TargetCharacter->GetCharacterRace())
             // {
             // case Race::human :
-            //     TargetCharacter->SetHp(-1*SetAmount);
+            TargetCharacter->SetHp(-1*SetAmount);
+            
+            UPawnUIComponent* PawnUIComponent = TargetCharacter->GetPawnUIComponent();
+		    PawnUIComponent->OnCurrentHealthChanged.Broadcast(TargetCharacter->GetHp()/TargetCharacter->GetMaxHp());
             //     Debug::Print(TEXT("Human Apply Damage"));
             //     break;
             // case Race::wraith :
