@@ -21,8 +21,8 @@ protected:
 	virtual void NativeOnInitialized() override;
 
 	// UI Component Input, Widget Bind UI Component Function
-	UFUNCTION(BlueprintImplementableEvent,meta = (DisplayName = "On Owning Hero UI Component Initialized"))
-	void BP_OnOwningPlayerUIComponentInitialized(UPlayerUIComponent* OwningHeroUIComponent);
+	UFUNCTION(BlueprintImplementableEvent,meta = (DisplayName = "On Owning Player UI Component Initialized"))
+	void BP_OnOwningPlayerUIComponentInitialized(UPlayerUIComponent* OwningPlayerUIComponent);
 	
 	UFUNCTION(BlueprintImplementableEvent,meta = (DisplayName = "On Owning Enemy UI Component Initialized"))
 	void BP_OnOwningEnemyUIComponentInitialized(UEnemyUIComponent* OwningEnemyUIComponent);

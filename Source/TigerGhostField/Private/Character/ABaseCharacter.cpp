@@ -91,7 +91,8 @@ void ABaseCharacter::BeginPlay()
 
     // English comment: Keep factory initialization (was present in HEAD).
     // English comment: This is safe even if class is not set; NewObject will return nullptr.
-    AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
+    if (AttackFactoryClass)
+        AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
 
     // English comment: TODO - StateReset
     // ToDo : StateReset

@@ -17,11 +17,11 @@
 #include "Component/UI/PlayerUIComponent.h"
 #include "Character/Attack/AttackBase.h"
 #include "Character/Potion/PotionBase.h"
-
 // English comment: Needed for zone actor logging in BeginPlay.
-#include "DebugHelper.h"
 #include "TypeZone/ZoneVolumeActor.h"
 #include "Widget/UserWidgetBase.h"
+
+#include "DebugHelper.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -46,8 +46,8 @@ APlayerCharacter::APlayerCharacter()
     GetCharacterMovement()->MaxWalkSpeed = 600.f;	// Max Walk Speed
     GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;	// Brake speed
     
-    PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("PlayerUIComponent"));	
-    HealthWidgetComponent = CreateDefaultSubobject<UWidgetComponent>("HealthWidgetComponent");
+    PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("PlayerUIComponent"));
+    HealthWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthWidgetComponent"));
     HealthWidgetComponent->SetupAttachment(GetMesh());
 }
 
