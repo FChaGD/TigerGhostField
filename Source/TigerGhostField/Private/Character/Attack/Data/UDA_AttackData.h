@@ -15,7 +15,8 @@ class UDA_AttackData : public UDataAsset
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
-	UAnimMontage* Montage;
+	UAnimMontage* AttackMontage;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 	float DamagePercent;
 };
