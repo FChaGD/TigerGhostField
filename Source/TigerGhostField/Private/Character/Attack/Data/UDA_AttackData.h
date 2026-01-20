@@ -12,6 +12,7 @@ UCLASS(Blueprintable, BlueprintType)
 class UDA_AttackData : public UDataAsset
 {
 	GENERATED_BODY()
+	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Data")
 	UAnimMontage* Montage;

@@ -33,14 +33,8 @@ void UUserWidgetBase::InitPlayerCreatedWidget(AActor* OwningPlayerActor)
 {
 	if (IPawnUIInterface* PawnUIInterface = Cast<IPawnUIInterface>(OwningPlayerActor))
 	{
-		// Debug::Print(TEXT("PlayerWidget Create"));
 		UPlayerUIComponent* PlayerUIComponent = PawnUIInterface->GetPlayerUIComponent();
-
-		if (!PlayerUIComponent)
-		{
-			Debug::Print(TEXT("NONONO"));
-			return;
-		}
+		
 		checkf(PlayerUIComponent, TEXT("Failed to sxtrac an PlayerUIComponent from %s"), *OwningPlayerActor->GetActorNameOrLabel());
 
 		BP_OnOwningPlayerUIComponentInitialized(PlayerUIComponent);
