@@ -13,19 +13,57 @@
 #include "DataAssets/DA_InputDataAsset.h"
 #include "Component/Input/PlayerEnhancedInputComponent.h"
 #include "Component/Factory/AttackFactory.h"
+#include "Component/Factory/PotionFactory.h"
+#include "Component/UI/PlayerUIComponent.h"
 #include "Character/Attack/AttackBase.h"
 #include "Character/Potion/PotionBase.h"
-#include "Component/Factory/PotionFactory.h"
-
 // English comment: Needed for zone actor logging in BeginPlay.
 #include "TypeZone/ZoneVolumeActor.h"
+#include "Widget/UserWidgetBase.h"
+
+#include "DebugHelper.h"
 
 APlayerCharacter::APlayerCharacter()
 {
+    // Current Controller dont rotate Character
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationRoll = false;
+    bUseControllerRotationYaw = false;
+
+    // Camera SpringArm Create
+    CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+    CameraBoom->SetupAttachment(GetRootComponent());	// 루트컴포넌트에 자식으로 붙이기
+    CameraBoom->TargetArmLength = 200.f;
+    CameraBoom->SocketOffset = FVector(0.f,55.f,65.f);	// 자식의 offset 지정(카메라 오프셋)
+    CameraBoom->bUsePawnControlRotation = true;		// Camera Controller Rotation
+
+    FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+    FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+    FollowCamera->bUsePawnControlRotation = false;	// 이미 카메라봉이 회전하고 있으므로 회전 X
+    
+    GetCharacterMovement()->bOrientRotationToMovement = true;	// Character Move = Rotation 
+    GetCharacterMovement()->RotationRate = FRotator(0.f,500.f,0.f);	// Character Rotation Speed
+    GetCharacterMovement()->MaxWalkSpeed = 600.f;	// Max Walk Speed
+    GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;	// Brake speed
+    
+    PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("PlayerUIComponent"));
+    HealthWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthWidgetComponent"));
+    HealthWidgetComponent->SetupAttachment(GetMesh());
+}
+
+UPawnUIComponent* APlayerCharacter::GetPawnUIComponent() const
+{
+    return PlayerUIComponent;
+}
+
+UPlayerUIComponent* APlayerCharacter::GetPlayerUIComponent()
+{
+    return PlayerUIComponent;
 }
 
 void APlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
+    if (IsDead()) return;
     const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
     const FRotator MovementRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 
@@ -59,16 +97,17 @@ void APlayerCharacter::Input_Look(const FInputActionValue& InputActionValue)
 
 void APlayerCharacter::Input_RunTrigger(const FInputActionValue& InputActionValue)
 {
-    GetCharacterMovement()->MaxWalkSpeed = 600.f;
+    GetCharacterMovement()->MaxWalkSpeed = 800.f;
 }
 
 void APlayerCharacter::Input_RunComplete(const FInputActionValue& InputActionValue)
 {
-    GetCharacterMovement()->MaxWalkSpeed = 400.f;
+    GetCharacterMovement()->MaxWalkSpeed = 600.f;
 }
 
 void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionValue)
 {
+    if (IsDead()) return;
     UE_LOG(LogTemp, Warning, TEXT("Light Attack"));
 
     if (!CurrentLightAttack)
@@ -82,6 +121,7 @@ void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionVal
 
 void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
 {
+    if (IsDead()) return;
     UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
 
     if (!CurrentHeavyAttack)
@@ -95,6 +135,7 @@ void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionVal
 
 void APlayerCharacter::Input_RaceTransform(const FInputActionValue& InputActionValue)
 {
+    if (IsDead()) return;
     const bool bPressed = InputActionValue.Get<bool>();
     if (!bPressed)
     {
@@ -127,6 +168,7 @@ void APlayerCharacter::Input_RaceTransform(const FInputActionValue& InputActionV
 
 void APlayerCharacter::Input_Potion(const FInputActionValue& InputActionValue)
 {
+    if (IsDead()) return;
     UE_LOG(LogTemp, Warning, TEXT("Input Potion"));
 
     if (CurrentPotion)
@@ -313,6 +355,12 @@ void APlayerCharacter::BeginPlay()
         {
             UE_LOG(LogTemp, Warning, TEXT("CreatePotion returned null"));
         }
+    }
+    // just Widget Component, need Cast
+    if (UUserWidgetBase* HealthWidget = Cast<UUserWidgetBase>(HealthWidgetComponent->GetUserWidgetObject()))
+    {
+        // Chracter Create, init widget
+        HealthWidget->InitPlayerCreatedWidget(this);
     }
 }
 

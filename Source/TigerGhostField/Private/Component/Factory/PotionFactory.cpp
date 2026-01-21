@@ -1,6 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
+// Author: ju wonung
 #include "Component/Factory/PotionFactory.h"
 #include "Character/Potion/PotionBase.h"
 #include "Character/Potion/HumanPotion.h"
@@ -19,10 +17,10 @@ UPotionBase* UPotionFactory::CreatePotion(int test)
 		PotionClass = PotionClassSet.HumanPotionClass;
 		return NewObject<UPotionBase>(this, PotionClass);
 	case 1:
-		PotionClass = PotionClassSet.HumanPotionClass;
+		PotionClass = PotionClassSet.WraithPotionClass;
 		return NewObject<UPotionBase>(this, PotionClass);
 	case 2:
-		PotionClass = PotionClassSet.HumanPotionClass;
+		PotionClass = PotionClassSet.YokaiPotionClass;
 		return NewObject<UPotionBase>(this, PotionClass);
 	default:
 		break;

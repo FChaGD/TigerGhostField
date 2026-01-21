@@ -4,11 +4,24 @@
 #include "Character/Attack/HeavyAttack.h"
 #include "Character/ABaseCharacter.h"
 
+#include "DebugHelper.h"
+
 void UHeavyAttack::Execute()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Heavy Attack Execute"));
-    if (OwnerCharacter->GetStamina() < 2.f)
-        return;
 	
-	OwnerCharacter->BoxTrace(this);
+	if (!DataAsset)
+	{
+		Debug::Print(TEXT("No Attack Data Asset"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Heavy Attack Execute"));
+		if (OwnerCharacter->GetStamina() < 3.f)
+		{
+			Debug::Print(TEXT("Stamina is less than 3"));
+			return;
+		}
+	
+		OwnerCharacter->BoxTrace(this);
+	}
 }

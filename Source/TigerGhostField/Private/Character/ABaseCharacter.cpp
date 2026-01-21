@@ -17,6 +17,7 @@
 #include "Character/PlayerCharacter/PlayerData/UDA_RaceForm.h"
 
 // Components
+#include "Component/UI/PawnUIComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -69,9 +70,16 @@ void ABaseCharacter::BoxTrace(UAttackBase* AttackType)
         {
             continue;
         }
-        else
+
+        // English comment: Minimal apply damage for current implementation.
+        TargetCharacter->SetHp(-1.f * SetAmount);
+
+        // English comment: Notify UI if the target has a UI component.
+        if (UPawnUIComponent* PawnUIComponent = TargetCharacter->GetPawnUIComponent())
         {
-            // Intentionally left as your project logic.
+            const float MaxHpValue = TargetCharacter->GetMaxHp();
+            const float HpRatio = (MaxHpValue > 0.f) ? (TargetCharacter->GetHp() / MaxHpValue) : 0.f;
+            PawnUIComponent->OnCurrentHealthChanged.Broadcast(HpRatio);
         }
     }
 }
@@ -80,7 +88,16 @@ void ABaseCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
+    // English comment: Create factory only if class is set (avoid NewObject(nullptr) assert).
+    AttackFactory = nullptr;
+    if (AttackFactoryClass)
+    {
+        AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Combat] AttackFactoryClass is null (%s)"), *GetName());
+    }
 
     // English comment: Apply race only in real game world (avoid editor preview/CDO).
     if (!GetWorld() || !GetWorld()->IsGameWorld())
@@ -102,7 +119,6 @@ void ABaseCharacter::BeginPlay()
             TransformToRace(DefaultRaceType);
         });
 }
-
 
 void ABaseCharacter::CalculateDamage(const FAttackParams& attackParam)
 {
@@ -128,6 +144,11 @@ void ABaseCharacter::SetPhysicalAttackCoefficient()
 {
     float StaminaPercent = (MaxStamina > 0.f) ? (Stamina / MaxStamina * 100.f) : 100.f;
     PhysicalAttackCoefficient = FMath::Clamp(0.75f * StaminaPercent + 65.f, 80.f, 140.f);
+}
+
+UPawnUIComponent* ABaseCharacter::GetPawnUIComponent() const
+{
+    return nullptr;
 }
 
 void ABaseCharacter::AddStatTrigger(const TScriptInterface<ITriggerObserver>& Trigger)
@@ -288,7 +309,6 @@ void ABaseCharacter::Death()
 
 bool ABaseCharacter::TransformToRace(ERaceType TargetRaceType)
 {
-    // English comment: If already applied and same target, do nothing.
     if (TargetRaceType == CurrentRaceType && bHasAppliedRaceForm)
     {
         return true;
@@ -329,7 +349,6 @@ void ABaseCharacter::ApplyRaceForm(const UDA_RaceForm* Form)
         return;
     }
 
-    // English comment: Apply skeletal mesh.
     if (Form->SkeletalMesh)
     {
 #if ENGINE_MAJOR_VERSION >= 5
@@ -344,7 +363,6 @@ void ABaseCharacter::ApplyRaceForm(const UDA_RaceForm* Form)
         UE_LOG(LogTemp, Warning, TEXT("[Race] ApplyRaceForm: SkeletalMesh is null"));
     }
 
-    // English comment: Ensure AnimationBlueprint mode before setting AnimClass.
     if (Form->AnimClass)
     {
         MeshComp->SetAnimationMode(EAnimationMode::AnimationBlueprint);
@@ -352,12 +370,10 @@ void ABaseCharacter::ApplyRaceForm(const UDA_RaceForm* Form)
         MeshComp->InitAnim(true);
     }
 
-    // English comment: Apply capsule first, then adjust mesh offset (optional auto-fit).
     if (UCapsuleComponent* Cap = GetCapsuleComponent())
     {
         Cap->SetCapsuleSize(Form->CapsuleRadius, Form->CapsuleHalfHeight, true);
 
-        // English comment: Auto-fit mesh Z to capsule half height if you want stable footing.
         FVector Loc = Form->MeshRelativeLocation;
         Loc.Z = -Form->CapsuleHalfHeight;
         MeshComp->SetRelativeLocation(Loc);
@@ -367,11 +383,9 @@ void ABaseCharacter::ApplyRaceForm(const UDA_RaceForm* Form)
         MeshComp->SetRelativeLocation(Form->MeshRelativeLocation);
     }
 
-    // English comment: Apply mesh relative transform.
     MeshComp->SetRelativeRotation(Form->MeshRelativeRotation);
     MeshComp->SetRelativeScale3D(Form->MeshRelativeScale);
 
-    // English comment: Apply movement values.
     if (UCharacterMovementComponent* Move = GetCharacterMovement())
     {
         Move->MaxWalkSpeed = Form->MaxWalkSpeed;
@@ -379,7 +393,6 @@ void ABaseCharacter::ApplyRaceForm(const UDA_RaceForm* Form)
         Move->RotationRate = FRotator(0.f, Form->RotationRateYaw, 0.f);
     }
 
-    // English comment: Runtime verify log.
     UE_LOG(LogTemp, Warning, TEXT("[Race] Applied: Mesh=%s AnimClass=%s Loc=%s Rot=%s Scale=%s CapR=%.1f CapHH=%.1f Speed=%.1f Jump=%.1f RotYaw=%.1f"),
         *GetNameSafe(MeshComp->SkeletalMesh),
         *GetNameSafe(MeshComp->GetAnimClass()),
