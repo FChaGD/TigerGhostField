@@ -8,7 +8,6 @@
 
 bool UDA_RaceForm::IsValidForm() const
 {
-    // NOTE: For current milestone, only SkeletalMesh is required for stable transform.
-    //       Other fields (AnimClass / capsule / movement / content refs) will be validated later.
-    return SkeletalMesh != nullptr;
+    // English comment: Minimal requirement is SkeletalMesh.
+    return (SkeletalMesh != nullptr);
 }

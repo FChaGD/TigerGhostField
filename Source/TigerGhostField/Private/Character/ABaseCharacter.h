@@ -25,7 +25,6 @@ class UPotionBase;
 class UPotionFactory;
 class UDA_RaceForm;
 
-// Mentality state definition
 UENUM(BlueprintType)
 enum class EMentalityState : uint8
 {
@@ -166,31 +165,24 @@ protected:
     // ------------------------------
     // Attack / Potion (BaseAttack priority)
 
-    // AttackFactory Class
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
     TSubclassOf<UAttackFactory> AttackFactoryClass;
 
-    // Attack Create Factory
     UPROPERTY()
     UAttackFactory* AttackFactory = nullptr;
 
-    // PotionFactory Class
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
     TSubclassOf<UPotionFactory> PotionFactoryClass;
 
-    // Potion Create Factory
     UPROPERTY()
     UPotionFactory* PotionFactory = nullptr;
 
-    // Current Light Attack Object
     UPROPERTY()
     ULightAttack* CurrentLightAttack = nullptr;
 
-    // Current Heavy Attack Object
     UPROPERTY()
     UHeavyAttack* CurrentHeavyAttack = nullptr;
 
-    // Current Potion Object
     UPROPERTY()
     UPotionBase* CurrentPotion = nullptr;
 
@@ -207,25 +199,21 @@ public:
 
 #pragma region Race
 protected:
-    // Default race type assigned to this character
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
     ERaceType DefaultRaceType = ERaceType::Human;
 
-    // Current race type applied to this character
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
     ERaceType CurrentRaceType = ERaceType::Human;
 
-    // Owned race forms mapped by race type (if missing, transform is canceled)
     UPROPERTY(EditDefaultsOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
     TMap<ERaceType, TObjectPtr<UDA_RaceForm>> OwnedRaceForms;
 
 protected:
-    // Transforms this character to the target race type if data is available
     UFUNCTION(BlueprintCallable, Category = "Race")
     bool TransformToRace(ERaceType TargetRaceType);
 
-    // Applies the minimum stable subset of a race form (mesh only for now)
-    void ApplyRaceFormMinimal(const UDA_RaceForm* Form);
+    // English comment: Applies race form (mesh/anim/transform/capsule/movement).
+    void ApplyRaceForm(const UDA_RaceForm* Form);
 
     UPROPERTY(VisibleInstanceOnly, Category = "Race")
     bool bHasAppliedRaceForm = false;

@@ -1,7 +1,7 @@
 // ABaseCharacter.cpp
 // Author: kwak hyonbin
 // Description: Base character class implementing stats / combat calculations.
-// NOTE: Race related behavior is added (minimal mesh swap only).
+// NOTE: Race related behavior is added (full apply: mesh/anim/transform/capsule/movement).
 
 #include "Character/ABaseCharacter.h"
 
@@ -13,9 +13,13 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Potion/PotionBase.h"
 
-// NOTE: Race form data asset
+// Race form data asset
 #include "Character/PlayerCharacter/PlayerData/UDA_RaceForm.h"
+
+// Components
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -30,57 +34,44 @@ void ABaseCharacter::BoxTrace(UAttackBase* AttackType)
     TArray<FHitResult> HitResults;
 
     TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn)); // 캐릭터만 맞추고 싶으면 Pawn
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
 
-    // 5) Ignore Actors
     TArray<AActor*> ActorsToIgnore;
     ActorsToIgnore.Add(this);
 
     UKismetSystemLibrary::BoxTraceMultiForObjects(
-        GetWorld(),                                    // WorldContext
-        GetActorLocation(),                             // Start (FVector)
-        GetActorLocation() + GetActorForwardVector() * 200.f, // End (FVector)
-        FVector(30.f, 50.f, 60.f),                      // Half Size (FVector)
-        GetActorForwardVector().Rotation(),             // Orientation (FRotator)
-        ObjectTypes,                                    // Object Types
-        false,                                          // Trace Complex
-        ActorsToIgnore,                                 // Actors to Ignore
-        EDrawDebugTrace::Persistent,                    // Debug Draw
-        HitResults,                                     // Out Hits
-        true                                            // Ignore Self
+        GetWorld(),
+        GetActorLocation(),
+        GetActorLocation() + GetActorForwardVector() * 200.f,
+        FVector(30.f, 50.f, 60.f),
+        GetActorForwardVector().Rotation(),
+        ObjectTypes,
+        false,
+        ActorsToIgnore,
+        EDrawDebugTrace::Persistent,
+        HitResults,
+        true
     );
 
     TSet<AActor*> UniqueActors;
     for (const FHitResult& HitResult : HitResults)
     {
-        AActor* temp = HitResult.GetActor();
-        if (!temp) continue;
-        if (UniqueActors.Contains(temp)) continue;
-        UniqueActors.Add(temp);
+        AActor* Temp = HitResult.GetActor();
+        if (!Temp) continue;
+        if (UniqueActors.Contains(Temp)) continue;
+        UniqueActors.Add(Temp);
 
-        ABaseCharacter* TargetCharacter = Cast<ABaseCharacter>(temp);
+        ABaseCharacter* TargetCharacter = Cast<ABaseCharacter>(Temp);
 
-        float SetAmount = AttackPower * (AttackType && AttackType->IsA(UHeavyAttack::StaticClass()) ? 1.5 : 0.8);
+        float SetAmount = AttackPower * (AttackType && AttackType->IsA(UHeavyAttack::StaticClass()) ? 1.5f : 0.8f);
 
         if (!TargetCharacter)
+        {
             continue;
+        }
         else
         {
-            // switch (TargetCharacter->GetCharacterRace())
-            // {
-            // case Race::human :
-            //     TargetCharacter->SetHp(-1*SetAmount);
-            //     Debug::Print(TEXT("Human Apply Damage"));
-            //     break;
-            // case Race::wraith :
-            //     TargetCharacter->SetMentality(-1*SetAmount);
-            //     Debug::Print(TEXT("Wraith Apply Damage"));
-            //     break;
-            // case Race::yokai:
-            //     TargetCharacter->SetStamina(-1*SetAmount);
-            //     Debug::Print(TEXT("Yokai Apply Damage"));
-            //     break;
-            // }
+            // Intentionally left as your project logic.
         }
     }
 }
@@ -89,21 +80,32 @@ void ABaseCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    // English comment: Keep factory initialization (was present in HEAD).
-    // English comment: This is safe even if class is not set; NewObject will return nullptr.
     AttackFactory = NewObject<UAttackFactory>(this, AttackFactoryClass);
 
-    // English comment: TODO - StateReset
-    // ToDo : StateReset
+    // English comment: Apply race only in real game world (avoid editor preview/CDO).
+    if (!GetWorld() || !GetWorld()->IsGameWorld())
+    {
+        return;
+    }
 
-    // NOTE: Apply default race if data exists. If not, keep original mesh as-is.
-    TransformToRace(DefaultRaceType);
+    // English comment: Defer 1 tick to ensure components are registered.
+    GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+        {
+            if (!IsValid(this)) return;
+
+            USkeletalMeshComponent* MeshComp = GetMesh();
+            if (!MeshComp || !MeshComp->IsRegistered())
+            {
+                return;
+            }
+
+            TransformToRace(DefaultRaceType);
+        });
 }
+
 
 void ABaseCharacter::CalculateDamage(const FAttackParams& attackParam)
 {
-    //NOTE : Temporarily written content
-    //TODO : Modification after plan confirmation
     Hp -= attackParam.PhysicalDamage * (1 - PhysicalDef / 100);
     SpiritualPower -= attackParam.SpiritualDamage * (1 - SpiritualDef / 100);
     SetPhysicalDef();
@@ -119,14 +121,12 @@ void ABaseCharacter::CalculateDamage(const FAttackParams& attackParam)
 void ABaseCharacter::SetPhysicalDef()
 {
     float HpPercent = (MaxHp > 0.f) ? (Hp / MaxHp * 100.f) : 100.f;
-
     PhysicalDef = FMath::Clamp(55.f - 0.55f * HpPercent, 0.f, 50.f);
 }
 
 void ABaseCharacter::SetPhysicalAttackCoefficient()
 {
     float StaminaPercent = (MaxStamina > 0.f) ? (Stamina / MaxStamina * 100.f) : 100.f;
-
     PhysicalAttackCoefficient = FMath::Clamp(0.75f * StaminaPercent + 65.f, 80.f, 140.f);
 }
 
@@ -151,6 +151,7 @@ void ABaseCharacter::ConsumeStat(uint8 Type, float Amount)
     case 1: Stamina = FMath::Clamp(Stamina - Amount, 0.f, MaxStamina); break;
     case 2: Mentality = FMath::Clamp(Mentality - Amount, 0.f, MaxMentality); break;
     case 3: SpiritualPower = FMath::Clamp(SpiritualPower - Amount, 0.f, MaxSpiritualPower); break;
+    default: break;
     }
 
     if (MentalityState == EMentalityState::Weak)
@@ -174,7 +175,9 @@ void ABaseCharacter::ConsumeStat(uint8 Type, float Amount)
     case 1: StatName = FName("Stamina"); break;
     case 2: StatName = FName("Mentality"); break;
     case 3: StatName = FName("SpiritualPower"); break;
+    default: StatName = FName("Unknown"); break;
     }
+
     NotifyStatChanged(StatName);
 
     SetPhysicalDef();
@@ -187,57 +190,31 @@ void ABaseCharacter::ConsumeStat(uint8 Type, float Amount)
 
 float ABaseCharacter::GetMentalityPercent() const
 {
-    return Mentality / MaxMentality;
+    return (MaxMentality > 0.f) ? (Mentality / MaxMentality) : 0.f;
 }
 
-float ABaseCharacter::GetMaxMentality() const
-{
-    return MaxMentality;
-}
-
-float ABaseCharacter::GetMaxStamina() const
-{
-    return MaxStamina;
-}
-
-float ABaseCharacter::GetHp() const
-{
-    return Hp;
-}
-
-float ABaseCharacter::GetMentality() const
-{
-    return Mentality;
-}
-
-float ABaseCharacter::GetStamina() const
-{
-    return Stamina;
-}
-
-float ABaseCharacter::GetMaxHp() const
-{
-    return MaxHp;
-}
+float ABaseCharacter::GetMaxMentality() const { return MaxMentality; }
+float ABaseCharacter::GetMaxStamina() const { return MaxStamina; }
+float ABaseCharacter::GetHp() const { return Hp; }
+float ABaseCharacter::GetMentality() const { return Mentality; }
+float ABaseCharacter::GetStamina() const { return Stamina; }
+float ABaseCharacter::GetMaxHp() const { return MaxHp; }
 
 void ABaseCharacter::SetHp(float InHp)
 {
-    Hp = FMath::Clamp(Hp + InHp, 0, MaxHp);
-
+    Hp = FMath::Clamp(Hp + InHp, 0.f, MaxHp);
     Debug::Print(TEXT("Hp Set : %f"), Hp);
 }
 
 void ABaseCharacter::SetMentality(float InMentality)
 {
-    Mentality = FMath::Clamp(Mentality + InMentality, 0, MaxMentality);
-
+    Mentality = FMath::Clamp(Mentality + InMentality, 0.f, MaxMentality);
     Debug::Print(TEXT("Mentality Set : %f"), Mentality);
 }
 
 void ABaseCharacter::SetStamina(float InStamina)
 {
-    Stamina = FMath::Clamp(Stamina + InStamina, 0, MaxStamina);
-
+    Stamina = FMath::Clamp(Stamina + InStamina, 0.f, MaxStamina);
     Debug::Print(TEXT("Stamina Set : %f"), Stamina);
 }
 
@@ -283,39 +260,35 @@ void ABaseCharacter::SetMentalityState()
 void ABaseCharacter::SetRecoveryCoefficient()
 {
     float MentalityPercent = (MaxMentality > 0.f) ? (Mentality / MaxMentality * 100.f) : 100.f;
-
     RecoveryCoefficient = FMath::Clamp(2.42f * MentalityPercent + 8.f, 20.f, 250.f);
 }
 
 void ABaseCharacter::SetDamageReceivedCoefficient()
 {
     float MentalityPercent = (MaxMentality > 0.f) ? (Mentality / MaxMentality * 100.f) : 100.f;
-
     DamageReceivedCoefficient = FMath::Clamp(122.f - 0.42f * MentalityPercent, 80.f, 120.f);
 }
 
 void ABaseCharacter::SetSpirituallDef()
 {
     int SpiritualPowerValue = FMath::RoundToInt(SpiritualPower);
-    SpiritualDef = 100 + 5 * SpiritualPowerValue;
+    SpiritualDef = 100.f + 5.f * SpiritualPowerValue;
 }
 
 void ABaseCharacter::SetSpirituallSpiritualAttackCoefficient()
 {
     int SpiritualPowerValue = FMath::RoundToInt(SpiritualPower);
-    SpiritualAttackCoefficient = 100 + 5 * SpiritualPowerValue;
+    SpiritualAttackCoefficient = 100.f + 5.f * SpiritualPowerValue;
 }
 
 void ABaseCharacter::Death()
 {
-    //ToDo : HPCheck
     bIsDead = true;
 }
 
 bool ABaseCharacter::TransformToRace(ERaceType TargetRaceType)
 {
-    // English comment: If the same race is requested but we never applied any form yet,
-    // we must continue to apply it at least once.
+    // English comment: If already applied and same target, do nothing.
     if (TargetRaceType == CurrentRaceType && bHasAppliedRaceForm)
     {
         return true;
@@ -335,16 +308,14 @@ bool ABaseCharacter::TransformToRace(ERaceType TargetRaceType)
         return false;
     }
 
-    ApplyRaceFormMinimal(Form);
+    ApplyRaceForm(Form);
     CurrentRaceType = TargetRaceType;
-
-    // English comment: Mark as applied after a successful apply.
     bHasAppliedRaceForm = true;
 
     return true;
 }
 
-void ABaseCharacter::ApplyRaceFormMinimal(const UDA_RaceForm* Form)
+void ABaseCharacter::ApplyRaceForm(const UDA_RaceForm* Form)
 {
     if (!Form)
     {
@@ -354,18 +325,71 @@ void ABaseCharacter::ApplyRaceFormMinimal(const UDA_RaceForm* Form)
     USkeletalMeshComponent* MeshComp = GetMesh();
     if (!MeshComp)
     {
-        UE_LOG(LogTemp, Warning, TEXT("[Race] ApplyRaceFormMinimal: Mesh component is null"));
+        UE_LOG(LogTemp, Warning, TEXT("[Race] ApplyRaceForm: Mesh component is null"));
         return;
     }
 
-    if (!Form->SkeletalMesh)
+    // English comment: Apply skeletal mesh.
+    if (Form->SkeletalMesh)
     {
-        UE_LOG(LogTemp, Warning, TEXT("[Race] ApplyRaceFormMinimal: SkeletalMesh is null"));
-        return;
+#if ENGINE_MAJOR_VERSION >= 5
+        MeshComp->SetSkeletalMesh(Form->SkeletalMesh, true);
+#else
+        MeshComp->SetSkeletalMesh(Form->SkeletalMesh);
+        MeshComp->InitAnim(true);
+#endif
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Race] ApplyRaceForm: SkeletalMesh is null"));
     }
 
-    // English comment: Minimal stable apply - mesh swap only.
-    MeshComp->SetSkeletalMesh(Form->SkeletalMesh);
+    // English comment: Ensure AnimationBlueprint mode before setting AnimClass.
+    if (Form->AnimClass)
+    {
+        MeshComp->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+        MeshComp->SetAnimInstanceClass(Form->AnimClass);
+        MeshComp->InitAnim(true);
+    }
 
-    UE_LOG(LogTemp, Log, TEXT("[Race] Applied minimal form (mesh only): %d"), static_cast<int32>(Form->RaceType));
+    // English comment: Apply capsule first, then adjust mesh offset (optional auto-fit).
+    if (UCapsuleComponent* Cap = GetCapsuleComponent())
+    {
+        Cap->SetCapsuleSize(Form->CapsuleRadius, Form->CapsuleHalfHeight, true);
+
+        // English comment: Auto-fit mesh Z to capsule half height if you want stable footing.
+        FVector Loc = Form->MeshRelativeLocation;
+        Loc.Z = -Form->CapsuleHalfHeight;
+        MeshComp->SetRelativeLocation(Loc);
+    }
+    else
+    {
+        MeshComp->SetRelativeLocation(Form->MeshRelativeLocation);
+    }
+
+    // English comment: Apply mesh relative transform.
+    MeshComp->SetRelativeRotation(Form->MeshRelativeRotation);
+    MeshComp->SetRelativeScale3D(Form->MeshRelativeScale);
+
+    // English comment: Apply movement values.
+    if (UCharacterMovementComponent* Move = GetCharacterMovement())
+    {
+        Move->MaxWalkSpeed = Form->MaxWalkSpeed;
+        Move->JumpZVelocity = Form->JumpZVelocity;
+        Move->RotationRate = FRotator(0.f, Form->RotationRateYaw, 0.f);
+    }
+
+    // English comment: Runtime verify log.
+    UE_LOG(LogTemp, Warning, TEXT("[Race] Applied: Mesh=%s AnimClass=%s Loc=%s Rot=%s Scale=%s CapR=%.1f CapHH=%.1f Speed=%.1f Jump=%.1f RotYaw=%.1f"),
+        *GetNameSafe(MeshComp->SkeletalMesh),
+        *GetNameSafe(MeshComp->GetAnimClass()),
+        *MeshComp->GetRelativeLocation().ToString(),
+        *MeshComp->GetRelativeRotation().ToString(),
+        *MeshComp->GetRelativeScale3D().ToString(),
+        GetCapsuleComponent() ? GetCapsuleComponent()->GetUnscaledCapsuleRadius() : -1.f,
+        GetCapsuleComponent() ? GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() : -1.f,
+        GetCharacterMovement() ? GetCharacterMovement()->MaxWalkSpeed : -1.f,
+        GetCharacterMovement() ? GetCharacterMovement()->JumpZVelocity : -1.f,
+        GetCharacterMovement() ? GetCharacterMovement()->RotationRate.Yaw : -1.f
+    );
 }
