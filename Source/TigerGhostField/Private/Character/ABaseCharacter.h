@@ -12,7 +12,7 @@
 #include "Utill/ITriggerObserver.h"
 #include "TypeZone/ZoneAffectComponent.h"
 #include "Character/Attack/AttackTypes.h"
-#include "Character/PlayerCharacter/PlayerData/RaceTypes.h"
+#include "Character/PlayerCharacter/PlayerData/Race/RaceTypes.h"
 
 // NOTE: This must be the LAST include in this header.
 #include "ABaseCharacter.generated.h"
@@ -224,5 +224,7 @@ protected:
 
     UPROPERTY(VisibleInstanceOnly, Category = "Race")
     bool bHasAppliedRaceForm = false;
+public:
+    ERaceType GetCurrentRaceType() const { return CurrentRaceType; }
 #pragma endregion
 };

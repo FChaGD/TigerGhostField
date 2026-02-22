@@ -11,8 +11,8 @@
 #include "Delegates/DelegateCombinations.h"
 #include "Character/ABaseCharacter.h"
 #include "Containers/Queue.h"
-#include "PlayerData/RaceTypes.h"
-
+#include "PlayerData/Race/RaceTypes.h"
+#include "PrivateInterface/IWeaponInterface.h"
 #include "APlayerCharacter.generated.h"
 
 // Forward declarations
@@ -98,6 +98,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="UI")
 	UWidgetComponent* HealthWidgetComponent;
 #pragma endregion
-	
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TScriptInterface<IWeaponInterface> WeaponInterface;
 };

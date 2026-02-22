@@ -108,11 +108,10 @@ void APlayerCharacter::Input_RunComplete(const FInputActionValue& InputActionVal
 void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionValue)
 {
     if (IsDead()) return;
-    UE_LOG(LogTemp, Warning, TEXT("Light Attack"));
 
     if (!CurrentLightAttack)
     {
-        UE_LOG(LogTemp, Warning, TEXT("CurrentLightAttack is null"));
+        UE_LOG(LogTemp, Log, TEXT("[AttackSeq] Player Input : {AttackType : lightAttack}"));
         return;
     }
 
@@ -122,7 +121,7 @@ void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionVal
 void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
 {
     if (IsDead()) return;
-    UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
+    UE_LOG(LogTemp, Log, TEXT("[AttackSeq] Player Input : {AttackType : HeavyAttack}"));
 
     if (!CurrentHeavyAttack)
     {

@@ -14,7 +14,7 @@
 #include "Potion/PotionBase.h"
 
 // Race form data asset
-#include "Character/PlayerCharacter/PlayerData/UDA_RaceForm.h"
+#include "Character/PlayerCharacter/PlayerData/Race/UDA_RaceForm.h"
 
 // Components
 #include "Component/UI/PawnUIComponent.h"
@@ -122,8 +122,8 @@ void ABaseCharacter::BeginPlay()
 
 void ABaseCharacter::CalculateDamage(const FAttackParams& attackParam)
 {
-    Hp -= attackParam.PhysicalDamage * (1 - PhysicalDef / 100);
-    SpiritualPower -= attackParam.SpiritualDamage * (1 - SpiritualDef / 100);
+    Hp -= attackParam.HPDamage * (1 - PhysicalDef / 100);
+    SpiritualPower -= attackParam.SpiritualPowerDamage * (1 - SpiritualDef / 100);
     SetPhysicalDef();
     SetSpirituallDef();
     SetSpirituallSpiritualAttackCoefficient();

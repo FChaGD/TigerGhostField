@@ -1,17 +1,10 @@
-// Author: kwak hyonbin
-// Description: This file centralizes all combat-related data structures used throughout the game.
-//              It provides unified definitions for attack parameters, combat interaction types
-//              (such as Guard, Parry, Counter, and Dodge), and other combat mechanics to ensure
-//              consistency, clarity, and maintainability.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "FCombatStructs.generated.h"
 
 /**
- * Enum representing the interaction type between an attack and the target's defensive state.
- * Each value determines how the attack behaves depending on the target's current action.
+ * Enum representing the defensive interaction type for an attack (Guard, Parry, Counter, Dodge).
  */
 UENUM(BlueprintType)
 enum class ECombatInteractionType : uint8
@@ -19,14 +12,24 @@ enum class ECombatInteractionType : uint8
     Guard       UMETA(DisplayName = "Guard"),   // Blocked if target is guarding
     Parry       UMETA(DisplayName = "Parry"),   // Can be parried if target timing is correct
     Counter     UMETA(DisplayName = "Counter"), // Triggers a counterattack if conditions are met
-    Dodge       UMETA(DisplayName = "Dodge"),    // Can be dodged by a moving target
-    MAX UMETA(Hidden)
+    Dodge       UMETA(DisplayName = "Dodge"),   // Can be dodged by a moving target
+    MAX         UMETA(Hidden)
 };
 
 /**
- * Struct containing all parameters needed to calculate the damage and interaction effect of an attack.
- * This includes raw damage values and the interaction type, which determines how the attack
- * interacts with the target's defensive state.
+ * Enum representing the combat type for an attack (ABC style naming).
+ */
+UENUM(BlueprintType)
+enum class ECombatType : uint8
+{
+    A    UMETA(DisplayName = "Guard"),
+    B    UMETA(DisplayName = "Parry"),
+    C    UMETA(DisplayName = "Counter"),
+    MAX  UMETA(Hidden)
+};
+
+/**
+ * Struct for attack parameters including multiple damage types and defensive interaction.
  */
 USTRUCT(BlueprintType)
 struct FAttackParams
@@ -34,12 +37,27 @@ struct FAttackParams
     GENERATED_BODY()
 
 public:
-    /** Base raw physical damage value before any modifiers, resistances, or defensive interactions are applied. */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    //ToDo : Default 0 if End ProtoType
-    float PhysicalDamage = 10.f;
-    float SpiritualDamage = 10.f;
-    /** Defines the attack's interaction type relative to the target's defensive state (Guard, Parry, Counter, Dodge). */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    ECombatInteractionType AttackType = ECombatInteractionType::Dodge;
+    /** Base HP damage */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Damage")
+    float HPDamage = 0.f;
+
+    /** Base Stamina damage */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Damage")
+    float StaminaDamage = 0.f;
+
+    /** Base Mantality damage */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Damage")
+    float MantalityDamage = 0.f;
+
+    /** Base SpiritualPower damage */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Damage")
+    float SpiritualPowerDamage = 0.f;
+
+    /** Defines the attack's defensive interaction type (Guard, Parry, Counter, Dodge) */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Interaction")
+    ECombatInteractionType GuardType = ECombatInteractionType::Dodge;
+
+    /** Defines the attack's combat type (ABC style) */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Interaction")
+    ECombatType CombatType = ECombatType::A;
 };
