@@ -20,7 +20,8 @@ class TIGERGHOSTFIELD_API UDA_RaceForm : public UDataAsset
     GENERATED_BODY()
 
 public:
-    // NOTE: This key should match the owning map key in APlayerCharacter::OwnedRaceForms.
+    // NOTE: This key should match the keys used by the owning race component
+    //       (URaceFormComponent::OwnedRaceForms) on the character.
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Race")
     ERaceType RaceType = ERaceType::Human;
 

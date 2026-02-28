@@ -25,24 +25,24 @@
 
 APlayerCharacter::APlayerCharacter()
 {
-    // Current Controller dont rotate Character
+    // Prevent controller from directly rotating the pawn; movement input will govern orientation
     bUseControllerRotationPitch = false;
     bUseControllerRotationRoll = false;
     bUseControllerRotationYaw = false;
 
-    // Camera SpringArm Create
+    // create camera boom (spring arm) and attach to root component
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-    CameraBoom->SetupAttachment(GetRootComponent());	// 루트컴포넌트에 자식으로 붙이기
+    CameraBoom->SetupAttachment(GetRootComponent()); // attach to root component
     CameraBoom->TargetArmLength = 200.f;
-    CameraBoom->SocketOffset = FVector(0.f,55.f,65.f);	// 자식의 offset 지정(카메라 오프셋)
+    CameraBoom->SocketOffset = FVector(0.f,55.f,65.f);    // offset the camera relative to pawn
     CameraBoom->bUsePawnControlRotation = true;		// Camera Controller Rotation
 
     FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
     FollowCamera->bUsePawnControlRotation = false;	// 이미 카메라봉이 회전하고 있으므로 회전 X
     
-    GetCharacterMovement()->bOrientRotationToMovement = true;	// Character Move = Rotation 
-    GetCharacterMovement()->RotationRate = FRotator(0.f,500.f,0.f);	// Character Rotation Speed
+    GetCharacterMovement()->bOrientRotationToMovement = true;    // pawn will face direction of movement
+    GetCharacterMovement()->RotationRate = FRotator(0.f,500.f,0.f);    // how quickly the pawn rotates when moving
     GetCharacterMovement()->MaxWalkSpeed = 600.f;	// Max Walk Speed
     GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;	// Brake speed
     
@@ -63,7 +63,11 @@ UPlayerUIComponent* APlayerCharacter::GetPlayerUIComponent()
 
 void APlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
-    if (IsDead()) return;
+    if (IsDead()) 
+    {
+        UE_LOG(LogTemp, Verbose, TEXT("[Input] Move input ignored - character is dead"));
+        return;
+    }
     const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
     const FRotator MovementRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 
@@ -77,6 +81,12 @@ void APlayerCharacter::Input_Move(const FInputActionValue& InputActionValue)
     {
         const FVector RightDirection = MovementRotation.RotateVector(FVector::RightVector);
         AddMovementInput(RightDirection, MovementVector.X);
+    }
+    
+    if (FMath::Abs(MovementVector.X) > 0.1f || FMath::Abs(MovementVector.Y) > 0.1f)
+    {
+        UE_LOG(LogTemp, Verbose, TEXT("[Input] Move input (Forward: %.2f, Right: %.2f)"), 
+            MovementVector.Y, MovementVector.X);
     }
 }
 
@@ -98,54 +108,68 @@ void APlayerCharacter::Input_Look(const FInputActionValue& InputActionValue)
 void APlayerCharacter::Input_RunTrigger(const FInputActionValue& InputActionValue)
 {
     GetCharacterMovement()->MaxWalkSpeed = 800.f;
+    UE_LOG(LogTemp, Log, TEXT("[Input] Sprint started (Speed: 800.0)"));
 }
 
 void APlayerCharacter::Input_RunComplete(const FInputActionValue& InputActionValue)
 {
     GetCharacterMovement()->MaxWalkSpeed = 600.f;
+    UE_LOG(LogTemp, Log, TEXT("[Input] Sprint ended (Speed: 600.0)"));
 }
 
 void APlayerCharacter::Input_LightAttack(const FInputActionValue& InputActionValue)
 {
-    if (IsDead()) return;
-
-    if (!CurrentLightAttack)
+    if (IsDead()) 
     {
-        UE_LOG(LogTemp, Log, TEXT("[AttackSeq] Player Input : {AttackType : lightAttack}"));
+        UE_LOG(LogTemp, Verbose, TEXT("[Input] Light attack input ignored - character is dead"));
         return;
     }
 
+    if (!CurrentLightAttack)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Combat] Light attack executed but attack object is null"));
+        return;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("[Combat] Light attack input received and executed"));
     CurrentLightAttack->Execute();
 }
 
 void APlayerCharacter::Input_HeavyAttack(const FInputActionValue& InputActionValue)
 {
-    if (IsDead()) return;
-    UE_LOG(LogTemp, Log, TEXT("[AttackSeq] Player Input : {AttackType : HeavyAttack}"));
-
-    if (!CurrentHeavyAttack)
+    if (IsDead()) 
     {
-        UE_LOG(LogTemp, Warning, TEXT("CurrentHeavyAttack is null"));
+        UE_LOG(LogTemp, Verbose, TEXT("[Input] Heavy attack input ignored - character is dead"));
         return;
     }
 
+    if (!CurrentHeavyAttack)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Combat] Heavy attack executed but attack object is null"));
+        return;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("[Combat] Heavy attack input received and executed"));
     CurrentHeavyAttack->Execute();
 }
 
 void APlayerCharacter::Input_RaceTransform(const FInputActionValue& InputActionValue)
 {
-    if (IsDead()) return;
+    if (IsDead()) 
+    {
+        UE_LOG(LogTemp, Verbose, TEXT("[Input] Race transform input ignored - character is dead"));
+        return;
+    }
     const bool bPressed = InputActionValue.Get<bool>();
     if (!bPressed)
     {
         return;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("Race Transform Input"));
+    ERaceType Current = GetCurrentRaceType();
+    ERaceType TargetRaceType = Current;
 
-    ERaceType TargetRaceType = CurrentRaceType;
-
-    switch (CurrentRaceType)
+    switch (Current)
     {
     case ERaceType::Human:
         TargetRaceType = ERaceType::Wraith;
@@ -157,29 +181,36 @@ void APlayerCharacter::Input_RaceTransform(const FInputActionValue& InputActionV
         TargetRaceType = ERaceType::Human;
         break;
     default:
-        TargetRaceType = DefaultRaceType;
+        TargetRaceType = GetDefaultRaceType();
         break;
     }
 
+    UE_LOG(LogTemp, Log, TEXT("[Input] Race transform input received (Current: %d, Target: %d)"), 
+        static_cast<int32>(Current), static_cast<int32>(TargetRaceType));
     const bool bOk = TransformToRace(TargetRaceType);
-    UE_LOG(LogTemp, Warning, TEXT("TransformToRace => %s"), bOk ? TEXT("true") : TEXT("false"));
+    UE_LOG(LogTemp, Log, TEXT("[Race] Transform result: %s"), bOk ? TEXT("Success") : TEXT("Failed"));
 }
 
 void APlayerCharacter::Input_Potion(const FInputActionValue& InputActionValue)
 {
-    if (IsDead()) return;
-    UE_LOG(LogTemp, Warning, TEXT("Input Potion"));
+    if (IsDead()) 
+    {
+        UE_LOG(LogTemp, Verbose, TEXT("[Input] Potion input ignored - character is dead"));
+        return;
+    }
 
     if (CurrentPotion)
     {
+        UE_LOG(LogTemp, Log, TEXT("[Combat] Potion use triggered"));
         CurrentPotion->Execute();
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("NO Potion"));
+        UE_LOG(LogTemp, Warning, TEXT("[Combat] Potion use attempted but potion object is null"));
     }
 }
 
+// bind input actions from the data asset to the enhanced input component
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -281,6 +312,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
     }
 }
 
+// initial runtime setup for the player character (factories, widgets, zone info)
 void APlayerCharacter::BeginPlay()
 {
     Super::BeginPlay();
@@ -368,7 +400,7 @@ void APlayerCharacter::ApplyHumanAsDefaultMesh()
     const ERaceType HumanType = ERaceType::Human;
 
     UE_LOG(LogTemp, Warning, TEXT("[Race] Try ApplyHumanAsDefaultMesh. CurrentRaceType=%d"),
-        static_cast<int32>(CurrentRaceType));
+        static_cast<int32>(GetCurrentRaceType()));
 
     const bool bOk = TransformToRace(HumanType);
     UE_LOG(LogTemp, Warning, TEXT("[Race] ApplyHumanAsDefaultMesh => %s"), bOk ? TEXT("true") : TEXT("false"));

@@ -28,9 +28,14 @@ class TIGERGHOSTFIELD_API APlayerCharacter : public ABaseCharacter
     GENERATED_BODY()
 
 public:
+    /**
+     * Default constructor - sets up camera components and UI attachments.
+     */
     APlayerCharacter();
 	
 	//~Begin IPawnUIInterface Interface
+	// The pawn UI interface is implemented by the base class but the player
+	// character exposes a typed version for convenience.
 	virtual UPawnUIComponent* GetPawnUIComponent() const override;
 	virtual UPlayerUIComponent* GetPlayerUIComponent() override;
 	//~End IPawnUIInterface Interface

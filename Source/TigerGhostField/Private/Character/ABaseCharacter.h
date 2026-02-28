@@ -14,6 +14,8 @@
 #include "Character/Attack/AttackTypes.h"
 #include "Character/PlayerCharacter/PlayerData/Race/RaceTypes.h"
 
+#include "Character/Component/Stats/CharacterStatsComponent.h" // brings EMentalityState
+
 // NOTE: This must be the LAST include in this header.
 #include "ABaseCharacter.generated.h"
 
@@ -26,59 +28,26 @@ class UPotionBase;
 class UPotionFactory;
 class UDA_RaceForm;
 
-UENUM(BlueprintType)
-enum class EMentalityState : uint8
-{
-    Normal   UMETA(DisplayName = "Normal"),
-    Weak     UMETA(DisplayName = "Weak"),
-    Fragile  UMETA(DisplayName = "Fragile")
-};
+class UCombatComponent;
+class URaceFormComponent;
+
 
 UCLASS()
-class ABaseCharacter : public ACharacter, public ICharacterInterface, public IPawnUIInterface
+class TIGERGHOSTFIELD_API ABaseCharacter : public ACharacter, public ICharacterInterface, public IPawnUIInterface
 {
     GENERATED_BODY()
 
 private:
-    // ------------------------------
-    // Stat point values
-    int HpStatPoint = 0;
-    int StaminaStatPoint = 0;
-    int MentalityStatPoint = 0;
-    int SpiritualPowerStatPoint = 0;
-    int AttackPowerStatPoint = 0;
+    // Components owned by the base character.  Each component encapsulates a
+    // distinct slice of functionality (stats, combat helpers, race handling).
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess="true"))
+    UCharacterStatsComponent* StatsComponent;
 
-    // ------------------------------
-    // Health related values
-    float Hp = 100.f;
-    float MaxHp = 100.f;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess="true"))
+    UCombatComponent* CombatComponent;
 
-    // Physical defense value
-    float PhysicalDef = 0.f;
-    void SetPhysicalDef();
-
-    // ------------------------------
-    // Stamina related values
-    float Stamina = 100.f;
-    float MaxStamina = 100.f;
-
-    // Physical attack coefficient
-    float PhysicalAttackCoefficient = 100.f;
-    void SetPhysicalAttackCoefficient();
-
-    // ------------------------------
-    // Mentality related values
-    float Mentality = 100.f;
-    float MaxMentality = 100.f;
-
-    // Last consumed action type
-    uint8 LastConsumedType = 255;
-
-    // Count of consecutive identical actions
-    int32 ConsecutiveSameActionCount = 0;
-
-    // Current mentality state
-    EMentalityState MentalityState = EMentalityState::Normal;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess="true"))
+    URaceFormComponent* RaceComponent;
 
 public:
     //~Begin IPawnUIInterface Interface
@@ -107,50 +76,16 @@ public:
 
     float GetAttackPower() const;
     
-    bool IsDead() const                                     { return bIsDead; };
+    bool IsDead() const;
+
+    // utility accessors for underlying components
+    UCharacterStatsComponent* GetStatsComponent() const { return StatsComponent; }
+    UCombatComponent* GetCombatComponent() const { return CombatComponent; }
+    URaceFormComponent* GetRaceComponent() const { return RaceComponent; }
 
 private:
-    // Notifies observers that a stat value has changed
-    void NotifyStatChanged(FName StatName);
-
-    // Updates mentality state based on current conditions
-    void SetMentalityState();
-
-    // Recovery coefficient applied to regeneration logic
-    float RecoveryCoefficient = 100.f;
-    void SetRecoveryCoefficient();
-
-    // Damage received coefficient applied to incoming damage
-    float DamageReceivedCoefficient = 100.f;
-    void SetDamageReceivedCoefficient();
-
-    // ------------------------------
-    // Spiritual power related values
-    float SpiritualPower = 100.f;
-    float MaxSpiritualPower = 100.f;
-
-    // Spiritual defense value
-    float SpiritualDef = 0.f;
-    void SetSpirituallDef();
-
-    // Spiritual attack coefficient
-    float SpiritualAttackCoefficient = 100.f;
-    void SetSpirituallSpiritualAttackCoefficient();
-
-    // ------------------------------
-    // Base attack power (HEAD priority)
-    float AttackPower = 100.f;
-
-    // ------------------------------
-    // Death state flag
-    bool bIsDead = false;
-
-    // Handles character death logic
+    // Death logic remains in the actor so that subclasses can override
     virtual void Death();
-
-    // Registered stat trigger observers
-    UPROPERTY()
-    TArray<TScriptInterface<ITriggerObserver>> StatTriggers;
 
 protected:
     // Zone affect component reference
@@ -206,25 +141,30 @@ public:
 
 #pragma region Race
 protected:
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
-    ERaceType DefaultRaceType = ERaceType::Human;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
-    ERaceType CurrentRaceType = ERaceType::Human;
-
-    UPROPERTY(EditDefaultsOnly, Category = "Race", meta = (AllowPrivateAccess = "true"))
-    TMap<ERaceType, TObjectPtr<UDA_RaceForm>> OwnedRaceForms;
-
-protected:
+    /**
+     * Convenience wrapper that delegates to the attached race component.
+     * The underlying component owns all race-related data (forms, current
+     * state, default type, etc.).
+     */
     UFUNCTION(BlueprintCallable, Category = "Race")
     bool TransformToRace(ERaceType TargetRaceType);
 
-    // English comment: Applies race form (mesh/anim/transform/capsule/movement).
+    /**
+     * Directly apply a form asset to the owner.  Exposed mainly for
+     * backwards compatibility – most callers should use TransformToRace.
+     */
+    UFUNCTION(BlueprintCallable, Category = "Race")
     void ApplyRaceForm(const UDA_RaceForm* Form);
 
-    UPROPERTY(VisibleInstanceOnly, Category = "Race")
-    bool bHasAppliedRaceForm = false;
-public:
-    ERaceType GetCurrentRaceType() const { return CurrentRaceType; }
+    UFUNCTION(BlueprintCallable, Category = "Race")
+    ERaceType GetCurrentRaceType() const;
+
+    /**
+     * Returns the 'fallback' race type; originally stored on the actor but
+     * now owned by the race component.  Provided for any callers that
+     * still expect a default value.
+     */
+    UFUNCTION(BlueprintCallable, Category = "Race")
+    ERaceType GetDefaultRaceType() const;
 #pragma endregion
 };
